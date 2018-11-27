@@ -11,7 +11,11 @@ public class DBConnection {
 
 	Connection conn = null;
     Statement stmt = null;
-	
+
+
+	public DBConnection(){
+        initialize();
+    }
 	public void initialize(){
         try{
             //STEP 2: Register JDBC driver
@@ -20,6 +24,7 @@ public class DBConnection {
             //STEP 3: Open a connection
             System.out.println("Connecting to a selected database...");
             conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            stmt = conn.createStatement();
             System.out.println("Connected database successfully...");
 			
         }catch(Exception e){
@@ -29,20 +34,15 @@ public class DBConnection {
         }
 	}
 	
-	public ResultSet sendQuery(String query){
-		try{
-			ResultSet rs = stmt.executeQuery(query);
-			return rs;
-		}catch(Exception e){
-            //Handle errors for Class.forName
-            e.printStackTrace();
-			close();
-        }
+	public ResultSet sendQuery(String query) throws Exception{
+        return stmt.executeQuery(query);
 	}
 	
 	public void close(){
+        System.out.println("Closing Database...");
 		try{
             conn.close();
+            System.out.println("Closed Database Successfully");
         }catch(Exception e){
             //Handle errors for Class.forName
             e.printStackTrace();
