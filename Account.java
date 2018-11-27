@@ -4,6 +4,7 @@ public class Account{
 	public static final String POCKET="Pocket";
 
 	public String type;
+	public String customerPIN;
 	public int aid;
 	public double balance;
 	public boolean closed;
