@@ -7,9 +7,7 @@ public class TransactionSender{
 	public static void deposit(Account account, double amount, int date) throws Exception{
 		if(!account.closed && !account.type.equals(account.POCKET)){
 			double newBalance = account.balance + amount;
-			//maybe make this a function
 			update_balance("Account", account, newBalance);
-			
 		}else{
 			throw new Exception("Your account is either closed or this is a pocket account.");
 		}
@@ -18,8 +16,6 @@ public class TransactionSender{
 	}
 	
 	public static void top_up(Account account, Account linkedAccount, double amount, int date) throws Exception{
-
-		
 		if(account.closed || linkedAccount.closed){
 			throw new Exception("Your account or linked account is closed");
 		}else if(!account.type.equals(account.POCKET) || linkedAccount.type.equals(account.POCKET)){
@@ -73,8 +69,8 @@ public class TransactionSender{
 	}
 	
 	public static void transfer(Account sourceAccount, Account destAccount, double amount, int date) throws Exception{
-		//TODO: Verify that sourceAccount and destAccount have at least one owner in common.
-		//or maybe this is handled by GUI/Interface
+		//Verify that the customer who calls this method is an owner of both sourceAccount and destAccount.
+		//^Handle this in the GUI, or wherever transfer(...) is called from
 		if(sourceAccount.closed || destAccount.closed){
 			throw new Exception("One or both of the accounts are closed");
 		}else if(sourceAccount.type.equals(Account.POCKET) || destAccount.type.equals(Account.POCKET)){
@@ -142,6 +138,8 @@ public class TransactionSender{
 	}
 	
 	public static void wire(Account sourceAccount, Account destAccount, double amount, int date) throws Exception{
+		//Verify that the customer who calls this method is an owner of sourceAccount.
+		//^Handle this in the GUI, or wherever wire(...) is called from
 		if(sourceAccount.closed || destAccount.closed){
 			throw new Exception("One or both of the accounts are closed");
 		}else if(sourceAccount.type.equals(Account.POCKET) || destAccount.type.equals(Account.POCKET)){
@@ -160,7 +158,6 @@ public class TransactionSender{
 	}
 	
 	public static void write_check(Account account, double amount, int date) throws Exception{
-		
 		ResultSet maxCheckID = dbc.sendQuery( "SELECT MAX(T.checkID) as checkID " + 
 											  "FROM Transaction T " + 
 											  "WHERE T.type = 'write_check' AND T.aid1 = " + account.aid + ";" );
