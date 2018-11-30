@@ -18,6 +18,8 @@ public class TransactionSender{
 	}
 	
 	public static void top_up(Account account, Account linkedAccount, double amount, int date) throws Exception{
+
+		
 		if(account.closed || linkedAccount.closed){
 			throw new Exception("Your account or linked account is closed");
 		}else if(!account.type.equals(account.POCKET) || linkedAccount.type.equals(account.POCKET)){
@@ -25,6 +27,15 @@ public class TransactionSender{
 		}else if(linkedAccount.balance<amount){
 			throw new Exception("Your linked account does not have sufficient funds to complete the transaction.");
 		}else{
+			ResultSet rs = dbc.sendQuery("SELECT P.linked_aid " + 
+										 "FROM PocketAccount P " + 
+										 "WHERE P.aid = '" + account.aid + "';");
+			rs.next();
+			int linkedAid = rs.getInt("linked_aid");
+			if(linkedAid != linkedAccount.aid){
+				throw new Exception("You may only top-up your pocket account from the account that is linked with it");
+			}
+			
 			double newLinkedBalance = linkedAccount.balance - amount;
 			update_balance("Account", linkedAccount, newLinkedBalance);
 
@@ -91,6 +102,15 @@ public class TransactionSender{
 		}else if(account.balance<amount){
 			throw new Exception("Your pocket account does not have sufficient funds to complete the transaction.");
 		}else{
+			ResultSet rs = dbc.sendQuery("SELECT P.linked_aid " + 
+										 "FROM PocketAccount P " + 
+										 "WHERE P.aid = '" + account.aid + "';");
+			rs.next();
+			int linkedAid = rs.getInt("linked_aid");
+			if(linkedAid != linkedAccount.aid){
+				throw new Exception("You may only top-up your pocket account from the account that is linked with it");
+			}
+			
 			double newBalance = account.balance - amount;
 			update_balance("PocketAccount", account, newBalance);
 			
