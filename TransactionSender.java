@@ -5,7 +5,7 @@ public class TransactionSender{
 	private static DBConnection dbc=DBConnection().getInstance();
 	
 	public static void deposit(Account account, double amount, int date) throws Exception{
-		if(!account.closed && account.type != account.POCKET){
+		if(!account.closed && !account.type.equals(account.POCKET)){
 			double newBalance = account.balance + amount;
 			//maybe make this a function
 			update_balance("Account", account, newBalance);
@@ -20,8 +20,8 @@ public class TransactionSender{
 	public static void top_up(Account account, Account linkedAccount, double amount, int date) throws Exception{
 		if(account.closed || linkedAccount.closed){
 			throw new Exception("Your account or linked account is closed");
-		}else if(account.type!=account.POCKET || linkedAccount.type==account.POCKET){
-			throw new Exception("You can only topup pocket accounts, this is not one or your linked account is a pocket account");
+		}else if(!account.type.equals(account.POCKET) || linkedAccount.type.equals(account.POCKET)){
+			throw new Exception("You can only topup pocket accounts from a linked savings/checking account.");
 		}else if(linkedAccount.balance<amount){
 			throw new Exception("Your linked account does not have sufficient funds to complete the transaction.");
 		}else{
@@ -36,7 +36,7 @@ public class TransactionSender{
 	}
 	
 	public static void withdraw(Account account, double amount, int date) throws Exception{
-		if(account.closed || account.type == account.POCKET){
+		if(account.closed || account.type.equals(account.POCKET)){
 			throw new Exception("Your account is either closed or this is a pocket account.");
 		}else if(account.balance < amount){
 			throw new Exception("Your account does not have sufficient funds to complete the transaction.");
@@ -49,7 +49,7 @@ public class TransactionSender{
 	}
 	
 	public static void purchase(Account account, double amount, int date) throws Exception{
-		if(account.closed || account.type != account.POCKET){
+		if(account.closed || !account.type.equals(account.POCKET)){
 			throw new Exception("Your account is either closed or is not a pocket account.");
 		}else if(account.balance < amount){
 			throw new Exception("Your account does not have sufficient funds to complete the transaction.");
@@ -66,7 +66,7 @@ public class TransactionSender{
 		//or maybe this is handled by GUI/Interface
 		if(sourceAccount.closed || destAccount.closed){
 			throw new Exception("One or both of the accounts are closed");
-		}else if(sourceAccount.type == Account.POCKET || destAccount.type == Account.POCKET){
+		}else if(sourceAccount.type.equals(Account.POCKET) || destAccount.type.equals(Account.POCKET)){
 			throw new Exception("One or both of the accounts is not a savings or checking account.");
 		}else if(amount > 2000){
 			throw new Exception("Transfer amounts may not exceed $2000.");
@@ -86,7 +86,7 @@ public class TransactionSender{
 	public static void collect(Account account, Account linkedAccount, double amount, int date) throws Exception{
 		if(account.closed || linkedAccount.closed){
 			throw new Exception("Your account or linked account is closed");
-		}else if(account.type!=account.POCKET || linkedAccount.type==account.POCKET){
+		}else if(!account.type.equals(account.POCKET) || linkedAccount.type.equals(account.POCKET)){
 			throw new Exception("You can only collect from a pocket account to a checking or savings account.");
 		}else if(account.balance<amount){
 			throw new Exception("Your pocket account does not have sufficient funds to complete the transaction.");
@@ -104,7 +104,7 @@ public class TransactionSender{
 	public static void pay_friend(Account sourceAccount, Account destAccount, double amount, int date) throws Exception{
 		if(sourceAccount.closed || destAccount.closed){
 			throw new Exception("One or both of the accounts are closed");
-		}else if(sourceAccount.type != Account.POCKET || destAccount.type != Account.POCKET){
+		}else if(!sourceAccount.type.equals(Account.POCKET) || !destAccount.type.equals(Account.POCKET)){
 			throw new Exception("One or both of the accounts is not a pocket account.");
 		}else if(sourceAccount.customerPIN == destAccount.customerPIN){
 			throw new Exception("You can not pay-friend yourself.");
@@ -124,7 +124,7 @@ public class TransactionSender{
 	public static void wire(Account sourceAccount, Account destAccount, double amount, int date) throws Exception{
 		if(sourceAccount.closed || destAccount.closed){
 			throw new Exception("One or both of the accounts are closed");
-		}else if(sourceAccount.type == Account.POCKET || destAccount.type == Account.POCKET){
+		}else if(sourceAccount.type.equals(Account.POCKET) || destAccount.type.equals(Account.POCKET)){
 			throw new Exception("One or both of the accounts is not a savings or checking account.");
 		}else if(sourceAccount.balance < amount){
 			throw new Exception("Your source account does not have sufficient funds to complete the transaction.");
@@ -151,7 +151,7 @@ public class TransactionSender{
 		
 		if(account.closed){
 			throw new Exception("Your account is closed");
-		}else if(account.type != account.CHECKING){
+		}else if(!account.type.equals(account.CHECKING)){
 			throw new Exception("You may only write checks from checking accounts.");
 		}else if(account.balance < amount){
 			throw new Exception("Your account does not have sufficient funds to complete the transaction.");
