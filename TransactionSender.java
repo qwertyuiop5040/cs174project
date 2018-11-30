@@ -2,7 +2,7 @@ import java.sql.*;
 
 public class TransactionSender{
 	
-	private static DBConnection dbc=new DBConnection();
+	private static DBConnection dbc=DBConnection().getInstance();
 	
 	public static void deposit(Account account, double amount, int date) throws Exception{
 		if(!account.closed && account.type != account.POCKET){
@@ -143,7 +143,7 @@ public class TransactionSender{
 		
 		ResultSet maxCheckID = dbc.sendQuery( "SELECT MAX(T.checkID) as checkID " + 
 											  "FROM Transaction T " + 
-											  "WHERE T.type = \"write_check\" AND T.aid1 = " + account.aid );
+											  "WHERE T.type = 'write_check' AND T.aid1 = " + account.aid + ";" );
 		
 		maxCheckID.next();
 		
@@ -169,7 +169,7 @@ public class TransactionSender{
 														"FROM Transaction T " + 
 														"WHERE (T.aid1 = " + account.aid + " OR T.aid2 = " + account.aid + ")" + 
 														"AND " + date + " - T.date <= 30" + " " + 
-														"ORDER BY T.date DESC");
+														"ORDER BY T.date DESC;");
 		double averageDailyBalance = 0;
 		double currentBalance = account.balance;
 		
@@ -217,7 +217,7 @@ public class TransactionSender{
 		
 		ResultSet rate = dbc.sendQuery("SELECT R.rate " + 
 									   "FROM Rates R " + 
-									   "WHERE R.type = " + account.type);
+									   "WHERE R.type = " + "'" + account.type + "';");
 		rate.next();
 		double interestRate = rate.getDouble("rate");
 		
@@ -231,7 +231,7 @@ public class TransactionSender{
 	private static void update_balance(String table, Account account, double newBalance) throws Exception{
 		dbc.sendQuery("UPDATE " + table +  
 				" SET balance=" + newBalance +
-				" WHERE aid=" + account.aid);
+				" WHERE aid=" + account.aid + ";");
 		account.balance = newBalance;
 		account.checkBalance();
 	}
@@ -249,7 +249,7 @@ public class TransactionSender{
 		if(!type.equals("write_check")) checkID = 0;
 		
 		dbc.sendQuery(  "INSERT INTO Transaction " +
-						"VALUES (" + type + "," + aid1 + "," + aid2 + "," + amount + "," + checkID + "," + date + ")" );
+						"VALUES (" + "0, " + "'" + type + "'" + "," + aid1 + "," + aid2 + "," + amount + "," + checkID + "," + date + ");" );
 				
 	}
 	
