@@ -50,10 +50,11 @@ public class JDBCExample {
             }
     }
     public static void test1(){
-    	
+    	DatabaseInitializer.initializeDatabase();
+    	DatabaseInitializer.wipeDatabase();
     }
     public static void main(String[]args){
-        test();
+        // test();
         test1();
     }
     // public static void main(String[] args) {

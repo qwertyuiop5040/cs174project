@@ -2,7 +2,7 @@ import java.sql.*;
 
 public class TransactionSender{
 	
-	private static DBConnection dbc=DBConnection().getInstance();
+	private static DBConnection dbc=DBConnection.getInstance();
 	
 	public static void deposit(Account account, double amount, int date) throws Exception{
 		if(!account.closed && !account.type.equals(account.POCKET)){
