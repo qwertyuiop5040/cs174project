@@ -1,6 +1,10 @@
+import java.sql.*;
+
 public class TransactionSender{
+	
 	private static DBConnection dbc=new DBConnection();
-	public static void deposit(Account account, double amount) throws Exception{
+	
+	public static void deposit(Account account, double amount, int date) throws Exception{
 		if(!account.closed && account.type != account.POCKET){
 			double newBalance = account.balance + amount;
 			//maybe make this a function
@@ -9,8 +13,11 @@ public class TransactionSender{
 		}else{
 			throw new Exception("Your account is either closed or this is a pocket account.");
 		}
+		
+		store_transaction("deposit", account, amount, date);
 	}
-	public static void top_up(Account account, Account linkedAccount, double amount) throws Exception{
+	
+	public static void top_up(Account account, Account linkedAccount, double amount, int date) throws Exception{
 		if(account.closed || linkedAccount.closed){
 			throw new Exception("Your account or linked account is closed");
 		}else if(account.type!=account.POCKET || linkedAccount.type==account.POCKET){
@@ -24,8 +31,11 @@ public class TransactionSender{
 			double newBalance = account.balance + amount;
 			update_balance("PocketAccount", account, newBalance);
 		}
+		
+		store_transaction("top_up", account, linkedAccount, amount, date);
 	}
-	public static void withdraw(Account account, double amount) throws Exception{
+	
+	public static void withdraw(Account account, double amount, int date) throws Exception{
 		if(account.closed || account.type == account.POCKET){
 			throw new Exception("Your account is either closed or this is a pocket account.");
 		}else if(account.balance < amount){
@@ -34,8 +44,11 @@ public class TransactionSender{
 			double newBalance = account.balance - amount;
 			update_balance("Account", account, newBalance);
 		}
+		
+		store_transaction("withdraw", account, amount, date);
 	}
-	public static void purchase(Account account, double amount) throws Exception{
+	
+	public static void purchase(Account account, double amount, int date) throws Exception{
 		if(account.closed || account.type != account.POCKET){
 			throw new Exception("Your account is either closed or is not a pocket account.");
 		}else if(account.balance < amount){
@@ -44,8 +57,11 @@ public class TransactionSender{
 			double newBalance = account.balance - amount;
 			update_balance("PocketAccount", account, newBalance);
 		}
+		
+		store_transaction("purchase", account, amount, date);
 	}
-	public static void transfer(Account sourceAccount, Account destAccount, double amount) throws Exception{
+	
+	public static void transfer(Account sourceAccount, Account destAccount, double amount, int date) throws Exception{
 		//TODO: Verify that sourceAccount and destAccount have at least one owner in common.
 		//or maybe this is handled by GUI/Interface
 		if(sourceAccount.closed || destAccount.closed){
@@ -63,8 +79,11 @@ public class TransactionSender{
 			double newDestBalance = destAccount.balance + amount;
 			update_balance("Account", destAccount, newDestBalance);
 		}
+		
+		store_transaction("transfer", sourceAccount, destAccount, amount, date);
 	}
-	public static void collect(Account account, Account linkedAccount, double amount) throws Exception{
+	
+	public static void collect(Account account, Account linkedAccount, double amount, int date) throws Exception{
 		if(account.closed || linkedAccount.closed){
 			throw new Exception("Your account or linked account is closed");
 		}else if(account.type!=account.POCKET || linkedAccount.type==account.POCKET){
@@ -78,8 +97,11 @@ public class TransactionSender{
 			double newLinkedBalance = linkedAccount.balance + (0.97) * amount;
 			update_balance("Account", linkedAccount, newLinkedBalance);
 		}
+		
+		store_transaction("collect", account, linkedAccount, amount, date);
 	}
-	public static void pay_friend(Account sourceAccount, Account destAccount, double amount) throws Exception{
+	
+	public static void pay_friend(Account sourceAccount, Account destAccount, double amount, int date) throws Exception{
 		if(sourceAccount.closed || destAccount.closed){
 			throw new Exception("One or both of the accounts are closed");
 		}else if(sourceAccount.type != Account.POCKET || destAccount.type != Account.POCKET){
@@ -95,8 +117,11 @@ public class TransactionSender{
 			double newDestBalance = destAccount.balance + amount;
 			update_balance("PocketAccount", destAccount, newDestBalance);
 		}
+		
+		store_transaction("pay_friend", sourceAccount, destAccount, amount, date);
 	}
-	public static void wire(Account sourceAccount, Account destAccount, double amount) throws Exception{
+	
+	public static void wire(Account sourceAccount, Account destAccount, double amount, int date) throws Exception{
 		if(sourceAccount.closed || destAccount.closed){
 			throw new Exception("One or both of the accounts are closed");
 		}else if(sourceAccount.type == Account.POCKET || destAccount.type == Account.POCKET){
@@ -110,10 +135,20 @@ public class TransactionSender{
 			double newDestBalance = destAccount.balance + (0.98) * amount;
 			update_balance("Account", destAccount, newDestBalance);
 		}
+		
+		store_transaction("wire", sourceAccount, destAccount, amount, date);
 	}
-	public static void write_check(Account account, double amount) throws Exception{
-		//"Associated with a check transaction is a check number"
-		//store in DB? or where?
+	
+	public static void write_check(Account account, double amount, int date) throws Exception{
+		
+		ResultSet maxCheckID = dbc.sendQuery( "SELECT MAX(T.checkID) as checkID " + 
+											  "FROM Transaction T " + 
+											  "WHERE T.type = \"write_check\" AND T.aid1 = " + account.aid );
+		
+		maxCheckID.next();
+		
+		int checkID = maxCheckID.getInt("checkID") + 1;
+		
 		if(account.closed){
 			throw new Exception("Your account is closed");
 		}else if(account.type != account.CHECKING){
@@ -124,9 +159,73 @@ public class TransactionSender{
 			double newBalance = account.balance - amount;
 			update_balance("Account", account, newBalance);
 		}
+		
+		store_transaction("write_check", account, null, amount, checkID, date);
 	}
-	public static void accrue_interest() throws Exception{
-		//TODO
+	
+	public static void accrue_interest(Account account, int date) throws Exception{
+		
+		ResultSet rs = 					  dbc.sendQuery("SELECT * " + 
+														"FROM Transaction T " + 
+														"WHERE (T.aid1 = " + account.aid + " OR T.aid2 = " + account.aid + ")" + 
+														"AND " + date + " - T.date <= 30" + " " + 
+														"ORDER BY T.date DESC");
+		double averageDailyBalance = 0;
+		double currentBalance = account.balance;
+		
+		int earliestDate = date - 30;
+		
+		while(rs.next()){
+			String type = rs.getString("type");
+			int aid1 = rs.getInt("aid1");
+			int aid2 = rs.getInt("aid2");
+			Double amount = rs.getDouble("amount");
+			int currentDate = rs.getInt("date");
+			
+			int dateDifference = date - currentDate;
+			averageDailyBalance += dateDifference * currentBalance;
+			date = currentDate;
+			
+			switch(type) {
+				case "deposit":				currentBalance -= amount;
+											break;
+				case "top_up": 				if(aid1 == account.aid) currentBalance -= amount;
+											else					currentBalance += amount;
+											break;
+				case "withdraw":			currentBalance += amount;
+											break;
+				case "purchase":			currentBalance += amount;
+											break;
+				case "collect":				if(aid1 == account.aid) currentBalance += amount;
+											else					currentBalance -= (0.97) * amount;
+											break;
+				case "pay_friend":			if(aid1 == account.aid) currentBalance += amount;
+											else					currentBalance -= amount;
+											break;
+				case "wire":				if(aid1 == account.aid) currentBalance += amount;
+											else					currentBalance -= (0.98) * amount;
+											break;
+				case "write_check":			currentBalance += amount;
+											break;
+				case "accrue_interest":		currentBalance -= amount;
+			}
+		}
+		
+		averageDailyBalance += (date - earliestDate) * currentBalance;	//for final transaction
+		
+		averageDailyBalance /= 30;
+		
+		ResultSet rate = dbc.sendQuery("SELECT R.rate " + 
+									   "FROM Rates R " + 
+									   "WHERE R.type = " + account.type);
+		rate.next();
+		double interestRate = rate.getDouble("rate");
+		
+		double toBeAdded = (interestRate / 12) * averageDailyBalance;
+		double newBalance = account.balance + toBeAdded;
+		update_balance("Account", account, newBalance);
+		
+		store_transaction("accrue_interest", account, toBeAdded, date);
 	}
 	
 	private static void update_balance(String table, Account account, double newBalance) throws Exception{
@@ -135,6 +234,31 @@ public class TransactionSender{
 				" WHERE aid=" + account.aid);
 		account.balance = newBalance;
 		account.checkBalance();
+	}
+	
+	private static void store_transaction(String type, Account account1, Account account2, double amount, int checkID, int date) throws Exception{
+		int aid1;
+		int aid2;
+		
+		if(account1 != null) aid1 = account1.aid;
+		else				 aid1 = 0;
+		
+		if(account2 != null) aid2 = account2.aid;
+		else				 aid2 = 0;
+		
+		if(!type.equals("write_check")) checkID = 0;
+		
+		dbc.sendQuery(  "INSERT INTO Transaction " +
+						"VALUES (" + type + "," + aid1 + "," + aid2 + "," + amount + "," + checkID + "," + date + ")" );
+				
+	}
+	
+	private static void store_transaction(String type, Account account1, Account account2, double amount, int date) throws Exception{
+		store_transaction(type, account1, account2, amount, 0, date);
+	}
+	
+	private static void store_transaction(String type, Account account1, double amount, int date) throws Exception{
+		store_transaction(type, account1, null, amount, 0, date);
 	}
 
 }
