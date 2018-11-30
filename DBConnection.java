@@ -12,9 +12,15 @@ public class DBConnection {
 	Connection conn = null;
     Statement stmt = null;
 
-
-	public DBConnection(){
+    private DBConnection dbc;
+	private DBConnection(){
         initialize();
+    }
+    public static DBConnection getInstance(){
+    	if(dbc==null){
+    		dbc=new DBConnection();
+    	}
+    	return dbc;
     }
 	public void initialize(){
         try{
