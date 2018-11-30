@@ -49,8 +49,12 @@ public class JDBCExample {
                 dbc.close();
             }
     }
+    public static void test1(){
+    	
+    }
     public static void main(String[]args){
         test();
+        test1();
     }
     // public static void main(String[] args) {
     //     Connection conn = null;
