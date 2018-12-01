@@ -10,7 +10,7 @@ public class JDBCExample {
     static final String PASSWORD = "9594458";
 
     public static void test(){
-        DBConnection dbc=new DBConnection();
+        DBConnection dbc=DBConnection.getInstance();
         try{
             ResultSet rs=dbc.sendQuery("SELECT cid, cname, city, discount FROM cs174.Customers");
                 while(rs.next()){
@@ -50,8 +50,15 @@ public class JDBCExample {
             }
     }
     public static void test1(){
-    	DatabaseInitializer.initializeDatabase();
-    	DatabaseInitializer.wipeDatabase();
+    	try{
+    		DatabaseInitializer.wipeDatabase();
+	    	DatabaseInitializer.initializeDatabase();
+	    	DatabaseInitializer.wipeDatabase();
+	    }catch(Exception e){
+	    	e.printStackTrace();
+	    }finally{
+	    	DBConnection.getInstance().close();
+	    }
     }
     public static void main(String[]args){
         // test();

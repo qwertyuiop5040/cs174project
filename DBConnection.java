@@ -8,11 +8,11 @@ public class DBConnection {
     //  Database credentials
     static final String USERNAME = "hwang00";
     static final String PASSWORD = "9594458";
-
+    static final boolean DEBUG = true;
 	Connection conn = null;
     Statement stmt = null;
 
-    private DBConnection dbc;
+    private static DBConnection dbc;
 	private DBConnection(){
         initialize();
     }
@@ -41,6 +41,8 @@ public class DBConnection {
 	}
 	
 	public ResultSet sendQuery(String query) throws Exception{
+		if(DEBUG)
+			System.out.println("Sending query: " + query);
         return stmt.executeQuery(query);
 	}
 	
