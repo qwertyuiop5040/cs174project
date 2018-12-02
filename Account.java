@@ -2,9 +2,13 @@ public class Account{
 	public static final String CHECKING="Checking";
 	public static final String SAVINGS="Savings";
 	public static final String POCKET="Pocket";
-
+	public Account(int aid,String type, double balance, boolean closed){
+		this.aid=aid;
+		this.type=type;
+		this.balance=balance;
+		this.closed=closed;
+	}
 	public String type;
-	public String customerPIN;
 	public int aid;
 	public double balance;
 	public boolean closed;

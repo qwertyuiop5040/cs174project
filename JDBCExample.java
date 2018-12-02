@@ -53,6 +53,7 @@ public class JDBCExample {
     	try{
     		DatabaseInitializer.wipeDatabase();
 	    	DatabaseInitializer.initializeDatabase();
+	    	DatabaseInitializer.addDefaultData();
 	    	DatabaseInitializer.wipeDatabase();
 	    }catch(Exception e){
 	    	e.printStackTrace();
@@ -60,6 +61,7 @@ public class JDBCExample {
 	    	DBConnection.getInstance().close();
 	    }
     }
+
     public static void main(String[]args){
         // test();
         test1();

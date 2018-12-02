@@ -1,7 +1,147 @@
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 public class DatabaseInitializer{
 	private static DBConnection dbc=DBConnection.getInstance();
+	public static void addDefaultData() throws Exception{
+		try{
+			addDefaultCustomers();
+			addDefaultAccounts();
+			addDefaultTransactions();
+		}catch(Exception e){
+			ResultSet resultSet = dbc.sendQuery("SHOW ERRORS TRIGGER tid_trigger");
+			ResultSetMetaData rsmd = resultSet.getMetaData();
+			int columnsNumber = rsmd.getColumnCount();
+			while (resultSet.next()) {
+			    for (int i = 1; i <= columnsNumber; i++) {
+			        if (i > 1) System.out.print(",  ");
+			        String columnValue = resultSet.getString(i);
+			        System.out.print(columnValue + " " + rsmd.getColumnName(i));
+			    }
+			    System.out.println("");
+			}
+			e.printStackTrace();
+		}
+	}
+	public static void addDefaultCustomers() throws Exception{
+		dbc.sendQuery("INSERT INTO Customer VALUES(361721022,	'Alfred Hitchcock',	'6667 El Colegio #40',	'1234')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(231403227,	'Billy Clinton'	,	'5777 Hollister'		,'1468')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(412231856,	'Cindy Laugher'	,	'7000 Hollister'		,'3764')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(207843218,	'David Copperfill',	'1357 State St'		,'8582')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(122219876,	'Elizabeth Sailor',	'4321 State St'		,'3856')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(401605312,	'Fatal Castro'	,	'3756 La Cumbre Plaza',	'8193')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(201674933,	'George Brush'	,	'5346 Foothill Av',	'9824')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(212431965,	'Hurryson Ford'	,	'678 State St',		'3532')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(322175130,	'Ivan Lendme'	,	'1235 Johnson Dr',		'8471')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(344151573,	'Joe Pepsi'	,	'3210 State St',		'3692')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(209378521,	'Kelvin Coster',		'Santa Cruz #3579',	'4659')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(212116070,	'Li Kung'		,	'2 People\'\'s Rd Beijing',	'9173')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(188212217,	'Magic Jordon',		'3852 Court Rd'	,	'7351')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(203491209,	'Nam-hoi Chung',		'1997 People\'\'s St HK',	'5340')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(210389768,	'Olive Stoner',		'6689 El Colegio #151',	'8452')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(400651982,	'Pit Wilson',	'911 State St'	,	'1821')");
+	}
+	public static void addDefaultAccounts() throws Exception{
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type) " + 
+		"VALUES (17431, 'Student-Checking')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (54321, 'Student-Checking')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (12121, 'Student-Checking')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (41725, 'Interest-Checking')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (76543, 'Interest-Checking')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (93156, 'Interest-Checking')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (43942, 'Savings')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (29107, 'Savings')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (19023, 'Savings')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (32156, 'Savings')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (53027, 'Pocket')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (43947, 'Pocket')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (60413, 'Pocket')");
+
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (67521, 'Pocket')");
+	}
+	public static void addDefaultTransactions() throws Exception{
+		LocalDate epoch = LocalDate.ofEpochDay(0);
+		TransactionSender.deposit(TransactionSender.getAccount(17431), 200.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 2)));
+		TransactionSender.deposit(TransactionSender.getAccount(54231), 21000.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 3)));
+		TransactionSender.deposit(TransactionSender.getAccount(12121), 1200.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 3)));
+		TransactionSender.deposit(TransactionSender.getAccount(41725), 15000.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 3)));
+		TransactionSender.deposit(TransactionSender.getAccount(93156), 2000000.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 3)));
+		TransactionSender.top_up(TransactionSender.getAccount(53027), TransactionSender.getAccount(12121), 50.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 4)));
+		TransactionSender.deposit(TransactionSender.getAccount(43942), 1289.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 4)));
+		TransactionSender.deposit(TransactionSender.getAccount(29107), 34000.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 4)));
+		TransactionSender.deposit(TransactionSender.getAccount(19023), 2300.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 5)));
+		TransactionSender.top_up(TransactionSender.getAccount(60413), TransactionSender.getAccount(43942), 20.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 5)));
+		TransactionSender.deposit(TransactionSender.getAccount(32156), 1000.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 5)));
+		TransactionSender.deposit(TransactionSender.getAccount(76543), 8456.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 5)));
+		TransactionSender.top_up(TransactionSender.getAccount(43947), TransactionSender.getAccount(29107), 30.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 5)));
+		TransactionSender.top_up(TransactionSender.getAccount(67521), TransactionSender.getAccount(19023), 100.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 6)));
+		
+		TransactionSender.deposit(TransactionSender.getAccount(17431), 8800, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,2)));
+		TransactionSender.withdraw(TransactionSender.getAccount(54321), 3000, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,3)));
+		TransactionSender.withdraw(TransactionSender.getAccount(76543), 2000, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,5)));
+		TransactionSender.purchase(TransactionSender.getAccount(53027), 5, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,5)));
+		TransactionSender.withdraw(TransactionSender.getAccount(93156), 1000000, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,6)));
+		TransactionSender.write_check(TransactionSender.getAccount(93156), 950000, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,6)));
+		TransactionSender.withdraw(TransactionSender.getAccount(29107), 4000, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,6)));
+		TransactionSender.collect(TransactionSender.getAccount(43947), TransactionSender.getAccount(29107),10, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,6)));
+		TransactionSender.top_up(TransactionSender.getAccount(43947), TransactionSender.getAccount(29107),30, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,6)));
+		TransactionSender.transfer(TransactionSender.getAccount(43942), TransactionSender.getAccount(17431),289, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,7)));
+		TransactionSender.withdraw(TransactionSender.getAccount(43942), 289, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,7)));
+		TransactionSender.pay_friend(TransactionSender.getAccount(60413),TransactionSender.getAccount(67521), 10, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,8)));
+		TransactionSender.deposit(TransactionSender.getAccount(93156), 50000, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,8)));
+		TransactionSender.write_check(TransactionSender.getAccount(12121), 200, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,8)));
+		TransactionSender.transfer(TransactionSender.getAccount(41725), TransactionSender.getAccount(19023),289, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011,3,8)));
+
+		TransactionSender.wire(TransactionSender.getAccount(41725), TransactionSender.getAccount(32156), 4000.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 9)));
+		TransactionSender.pay_friend(TransactionSender.getAccount(53027), TransactionSender.getAccount(60413), 10.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 9)));
+		TransactionSender.purchase(TransactionSender.getAccount(60413), 15.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 10)));
+		TransactionSender.withdraw(TransactionSender.getAccount(93156), 20000.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 12)));
+		TransactionSender.write_check(TransactionSender.getAccount(76543), 456, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 12)));
+		TransactionSender.top_up(TransactionSender.getAccount(67521), TransactionSender.getAccount(19023), 50.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 12)));
+		TransactionSender.pay_friend(TransactionSender.getAccount(67521), TransactionSender.getAccount(53027), 20.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 14)));
+		TransactionSender.collect(TransactionSender.getAccount(43947), TransactionSender.getAccount(29107), 15.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 14)));
+
+	}
 	public static void initializeDatabase() throws Exception{
 		//Account, Linked(for pocket account) Primary Owner, Owner, Customer, Rate, Transaction
 		// ResultSet rs=dbc.sendQuery("SELECT * FROM ALL_OBJECTS WHERE OBJECT_NAME ='ACCOUNT' ");
@@ -9,8 +149,8 @@ public class DatabaseInitializer{
 		// 	System.out.println("hi");
 		// 	System.out.println(rs.getString("OBJECT_TYPE"));
 		// }
-		
-		// ResultSet resultSet = dbc.sendQuery("SELECT * FROM USER_OBJECTS");
+
+		// ResultSet resultSet = dbc.sendQuery("select * from user_errors where type = 'TRIGGER' and name = 'NEWALERT'");
 		// ResultSetMetaData rsmd = resultSet.getMetaData();
 		// int columnsNumber = rsmd.getColumnCount();
 		// while (resultSet.next()) {
@@ -21,19 +161,20 @@ public class DatabaseInitializer{
 		//     }
 		//     System.out.println("");
 		// }
+
 		System.out.println("Creating account");
 		dbc.sendQuery("CREATE TABLE Account("+
 			"aid int," +
 			"type varchar(20),"+
-			"balance1 float, "+
-			"closed1 int CHECK (closed1 between 0 and 1),"+
+			"balance float DEFAULT 0.0, "+
+			"closed int DEFAULT 0 CHECK (closed between 0 and 1),"+
 			"PRIMARY KEY (aid))");
 		System.out.println("Creating customer");
 		dbc.sendQuery("CREATE TABLE Customer("+
 			"tid int,"+
-			"pin varchar(4),"+
 			"name varchar(20),"+
 			"address varchar(50),"+
+			"pin varchar(4),"+
 			"PRIMARY KEY (pin))");
 		dbc.sendQuery("CREATE TABLE Rate("+
 			"type varchar(20),"+
@@ -57,7 +198,8 @@ public class DatabaseInitializer{
 			"  SELECT tid_inc.NEXTVAL"+
 			"  INTO   :new.id"+
 			"  FROM   dual"+
-			" END/");
+			" END");
+		dbc.sendQuery("ALTER TRIGGER tid_trigger ENABLE");
 		dbc.sendQuery("CREATE TABLE Owner("+
 			"aid int,"+
 			"pin varchar(4),"+
