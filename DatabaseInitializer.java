@@ -10,17 +10,17 @@ public class DatabaseInitializer{
 			addDefaultAccounts();
 			addDefaultTransactions();
 		}catch(Exception e){
-			ResultSet resultSet = dbc.sendQuery("SHOW ERRORS TRIGGER tid_trigger");
-			ResultSetMetaData rsmd = resultSet.getMetaData();
-			int columnsNumber = rsmd.getColumnCount();
-			while (resultSet.next()) {
-			    for (int i = 1; i <= columnsNumber; i++) {
-			        if (i > 1) System.out.print(",  ");
-			        String columnValue = resultSet.getString(i);
-			        System.out.print(columnValue + " " + rsmd.getColumnName(i));
-			    }
-			    System.out.println("");
-			}
+			// ResultSet resultSet = dbc.sendQuery("SHOW ERRORS TRIGGER tid_trigger");
+			// ResultSetMetaData rsmd = resultSet.getMetaData();
+			// int columnsNumber = rsmd.getColumnCount();
+			// while (resultSet.next()) {
+			//     for (int i = 1; i <= columnsNumber; i++) {
+			//         if (i > 1) System.out.print(",  ");
+			//         String columnValue = resultSet.getString(i);
+			//         System.out.print(columnValue + " " + rsmd.getColumnName(i));
+			//     }
+			//     System.out.println("");
+			// }
 			e.printStackTrace();
 		}
 	}
@@ -84,25 +84,25 @@ public class DatabaseInitializer{
 		"VALUES (32156, 'Savings')");
 
 		dbc.sendQuery("" + 
-		"INSERT INTO Account (aid, type)  " + 
-		"VALUES (53027, 'Pocket')");
+		"INSERT INTO PocketAccount (aid, linked_aid, type)  " + 
+		"VALUES (53027, 12121, 'Pocket')");
 
 		dbc.sendQuery("" + 
-		"INSERT INTO Account (aid, type)  " + 
-		"VALUES (43947, 'Pocket')");
+		"INSERT INTO PocketAccount (aid, linked_aid, type)  " + 
+		"VALUES (43947, 43927, 'Pocket')");
 
 		dbc.sendQuery("" + 
-		"INSERT INTO Account (aid, type)  " + 
-		"VALUES (60413, 'Pocket')");
+		"INSERT INTO PocketAccount (aid, linked_aid, type)  " + 
+		"VALUES (60413, 43942, 'Pocket')");
 
 		dbc.sendQuery("" + 
-		"INSERT INTO Account (aid, type)  " + 
-		"VALUES (67521, 'Pocket')");
+		"INSERT INTO PocketAccount (aid, linked_aid, type)  " + 
+		"VALUES (67521, 19023, 'Pocket')");
 	}
 	public static void addDefaultTransactions() throws Exception{
 		LocalDate epoch = LocalDate.ofEpochDay(0);
 		TransactionSender.deposit(TransactionSender.getAccount(17431), 200.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 2)));
-		TransactionSender.deposit(TransactionSender.getAccount(54231), 21000.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 3)));
+		TransactionSender.deposit(TransactionSender.getAccount(54321), 21000.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 3)));
 		TransactionSender.deposit(TransactionSender.getAccount(12121), 1200.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 3)));
 		TransactionSender.deposit(TransactionSender.getAccount(41725), 15000.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 3)));
 		TransactionSender.deposit(TransactionSender.getAccount(93156), 2000000.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 3)));
@@ -196,9 +196,9 @@ public class DatabaseInitializer{
 			" FOR EACH ROW"+
 			" BEGIN"+
 			"  SELECT tid_inc.NEXTVAL"+
-			"  INTO   :new.id"+
-			"  FROM   dual"+
-			" END");
+			"  INTO   :new.tid"+
+			"  FROM   dual;"+
+			" END;");
 		dbc.sendQuery("ALTER TRIGGER tid_trigger ENABLE");
 		dbc.sendQuery("CREATE TABLE Owner("+
 			"aid int,"+
@@ -216,11 +216,11 @@ public class DatabaseInitializer{
 		dbc.sendQuery("CREATE TABLE PocketAccount("+
 			"aid int,"+
 			"linked_aid int,"+
-			"closed int CHECK (closed between 0 and 1),"+
 			"type varchar(20),"+
-			"balance float,"+
+			"balance float DEFAULT 0.0,"+
+			"closed int DEFAULT 0 CHECK (closed between 0 and 1),"+
 			"PRIMARY KEY(aid, linked_aid),"+
-			"FOREIGN KEY (linked_aid) REFERENCES account(aid) ON DELETE CASCADE)");
+			"FOREIGN KEY (linked_aid) REFERENCES Account(aid) ON DELETE CASCADE)");
 	}
 	public static void wipeDatabase() throws Exception{
 		try{
