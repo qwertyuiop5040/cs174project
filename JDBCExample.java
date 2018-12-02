@@ -1,6 +1,9 @@
 import java.sql.*;
 
 public class JDBCExample {
+	
+	private static DBConnection dbc=DBConnection.getInstance();
+	
     // JDBC driver name and database URL
     static final String JDBC_DRIVER = "oracle.jdbc.driver.OracleDriver";
     static final String DB_URL = "jdbc:oracle:thin:@cloud-34-133.eci.ucsb.edu:1521:XE";
@@ -54,13 +57,23 @@ public class JDBCExample {
     		DatabaseInitializer.wipeDatabase();
 	    	DatabaseInitializer.initializeDatabase();
 	    	DatabaseInitializer.addDefaultData();
-	    	DatabaseInitializer.wipeDatabase();
+			tryIllegalQueries();
 	    }catch(Exception e){
 	    	e.printStackTrace();
 	    }finally{
-	    	DBConnection.getInstance().close();
+			try{
+				DatabaseInitializer.wipeDatabase();
+			}catch(Exception e){
+				e.printStackTrace();
+			}finally{
+				DBConnection.getInstance().close();
+			}
 	    }
     }
+	
+	public static void tryIllegalQueries(){
+		//dbc.sendQuery();
+	}
 
     public static void main(String[]args){
         // test();

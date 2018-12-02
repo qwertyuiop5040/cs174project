@@ -1,6 +1,7 @@
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 public class DatabaseInitializer{
 	private static DBConnection dbc=DBConnection.getInstance();
@@ -8,6 +9,8 @@ public class DatabaseInitializer{
 		try{
 			addDefaultCustomers();
 			addDefaultAccounts();
+			addDefaultOwners();
+			addRates();
 			addDefaultTransactions();
 		}catch(Exception e){
 			// ResultSet resultSet = dbc.sendQuery("SHOW ERRORS TRIGGER tid_trigger");
@@ -35,10 +38,10 @@ public class DatabaseInitializer{
 		dbc.sendQuery("INSERT INTO Customer VALUES(212431965,	'Hurryson Ford'	,	'678 State St',		'3532')");
 		dbc.sendQuery("INSERT INTO Customer VALUES(322175130,	'Ivan Lendme'	,	'1235 Johnson Dr',		'8471')");
 		dbc.sendQuery("INSERT INTO Customer VALUES(344151573,	'Joe Pepsi'	,	'3210 State St',		'3692')");
-		dbc.sendQuery("INSERT INTO Customer VALUES(209378521,	'Kelvin Coster',		'Santa Cruz #3579',	'4659')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(209378521,	'Kelvin Costner',		'Santa Cruz #3579',	'4659')");
 		dbc.sendQuery("INSERT INTO Customer VALUES(212116070,	'Li Kung'		,	'2 People\'\'s Rd Beijing',	'9173')");
 		dbc.sendQuery("INSERT INTO Customer VALUES(188212217,	'Magic Jordon',		'3852 Court Rd'	,	'7351')");
-		dbc.sendQuery("INSERT INTO Customer VALUES(203491209,	'Nam-hoi Chung',		'1997 People\'\'s St HK',	'5340')");
+		dbc.sendQuery("INSERT INTO Customer VALUES(203491209,	'Nam-Hoi Chung',		'1997 People\'\'s St HK',	'5340')");
 		dbc.sendQuery("INSERT INTO Customer VALUES(210389768,	'Olive Stoner',		'6689 El Colegio #151',	'8452')");
 		dbc.sendQuery("INSERT INTO Customer VALUES(400651982,	'Pit Wilson',	'911 State St'	,	'1821')");
 	}
@@ -46,7 +49,7 @@ public class DatabaseInitializer{
 		dbc.sendQuery("" + 
 		"INSERT INTO Account (aid, type) " + 
 		"VALUES (17431, 'Student-Checking')");
-
+		
 		dbc.sendQuery("" + 
 		"INSERT INTO Account (aid, type)  " + 
 		"VALUES (54321, 'Student-Checking')");
@@ -84,21 +87,97 @@ public class DatabaseInitializer{
 		"VALUES (32156, 'Savings')");
 
 		dbc.sendQuery("" + 
-		"INSERT INTO PocketAccount (aid, linked_aid, type)  " + 
-		"VALUES (53027, 12121, 'Pocket')");
-
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (53027, 'Pocket')");
+		
 		dbc.sendQuery("" + 
 		"INSERT INTO PocketAccount (aid, linked_aid, type)  " + 
-		"VALUES (43947, 43927, 'Pocket')");
-
+		"VALUES (53027, 12121, 'Pocket')");
+		
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (43947, 'Pocket')");
+		
+		dbc.sendQuery("" + 
+		"INSERT INTO PocketAccount (aid, linked_aid, type)  " + 
+		"VALUES (43947, 29107, 'Pocket')");
+		
+		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (60413, 'Pocket')");
+		
 		dbc.sendQuery("" + 
 		"INSERT INTO PocketAccount (aid, linked_aid, type)  " + 
 		"VALUES (60413, 43942, 'Pocket')");
 
 		dbc.sendQuery("" + 
+		"INSERT INTO Account (aid, type)  " + 
+		"VALUES (67521, 'Pocket')");
+		
+		dbc.sendQuery("" + 
 		"INSERT INTO PocketAccount (aid, linked_aid, type)  " + 
 		"VALUES (67521, 19023, 'Pocket')");
+		
 	}
+	
+	public static void addDefaultOwners() throws Exception{
+		HashMap<Integer, String[]> ownerMap = new HashMap<>();
+		ownerMap.put(17431, new String[]{"Joe Pepsi", "Cindy Laugher", "Ivan Lendme"});
+		ownerMap.put(54321, new String[]{"Hurryson Ford", "Cindy Laugher", "Elizabeth Sailor", "Nam-Hoi Chung"});
+		ownerMap.put(12121, new String[]{"David Copperfill"});
+		ownerMap.put(41725, new String[]{"George Brush", "Fatal Castro", "Billy Clinton"});
+		ownerMap.put(76543, new String[]{"Li Kung", "Magic Jordon"});
+		ownerMap.put(93156, new String[]{"Kelvin Costner", "Magic Jordon", "Olive Stoner", "Elizabeth Sailor", "Nam-Hoi Chung"});
+		ownerMap.put(43942, new String[]{"Alfred Hitchcock", "Pit Wilson", "Hurryson Ford", "Ivan Lendme"});
+		ownerMap.put(29107, new String[]{"Kelvin Costner", "Li Kung", "Olive Stoner"});
+		ownerMap.put(19023, new String[]{"Cindy Laugher", "George Brush", "Fatal Castro"});
+		ownerMap.put(32156, new String[]{"Magic Jordon", "David Copperfill", "Elizabeth Sailor", "Joe Pepsi", "Nam-Hoi Chung", "Olive Stoner"});
+		ownerMap.put(53027, new String[]{"David Copperfill"});
+		ownerMap.put(43947, new String[]{"Li Kung", "Olive Stoner"});
+		ownerMap.put(60413, new String[]{"Alfred Hitchcock", "Pit Wilson", "Elizabeth Sailor", "Billy Clinton"});
+		ownerMap.put(67521, new String[]{"Kelvin Costner", "Fatal Castro", "Hurryson Ford"});
+		
+		Iterator it = ownerMap.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry pair = (Map.Entry) it.next();
+			
+			int aid = (Integer) pair.getKey();
+			String[] owners = (String[]) pair.getValue();
+			
+			boolean first = true;
+			for(String s : owners){
+				ResultSet pinResult = dbc.sendQuery("" + 
+													"SELECT C.pin " + 
+													"FROM Customer C " + 
+													"WHERE C.name = '" + s + "'");
+				pinResult.next();
+				String pin = pinResult.getString("pin");
+				
+				System.out.println("Adding owner " + pin + " to account " + aid);
+				
+				if(first){
+					dbc.sendQuery("" + 
+					"INSERT INTO PrimaryOwner " + 
+					"VALUES (" + aid + ", '" + pin + "')");
+					first = false;
+				}
+				
+				dbc.sendQuery("" + 
+				"INSERT INTO Owner " + 
+				"VALUES (" + aid + ", '" + pin + "')");
+			}
+			it.remove();
+		}
+		
+	}
+	
+	public static void addRates() throws Exception{
+		dbc.sendQuery("INSERT INTO Rate VALUES ('Interest-Checking', 0.055)");
+		dbc.sendQuery("INSERT INTO Rate VALUES ('Student-Checking', 0.0)");
+		dbc.sendQuery("INSERT INTO Rate VALUES ('Pocket', 0.0)");
+		dbc.sendQuery("INSERT INTO Rate VALUES ('Savings', .075)");
+	}
+	
 	public static void addDefaultTransactions() throws Exception{
 		LocalDate epoch = LocalDate.ofEpochDay(0);
 		TransactionSender.deposit(TransactionSender.getAccount(17431), 200.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 2)));
@@ -217,10 +296,10 @@ public class DatabaseInitializer{
 			"aid int,"+
 			"linked_aid int,"+
 			"type varchar(20),"+
-			"balance float DEFAULT 0.0,"+
 			"closed int DEFAULT 0 CHECK (closed between 0 and 1),"+
 			"PRIMARY KEY(aid, linked_aid),"+
-			"FOREIGN KEY (linked_aid) REFERENCES Account(aid) ON DELETE CASCADE)");
+			"FOREIGN KEY (linked_aid) REFERENCES Account(aid) ON DELETE CASCADE,"+
+			"FOREIGN KEY (aid) REFERENCES Account ON DELETE CASCADE)");
 	}
 	public static void wipeDatabase() throws Exception{
 		try{

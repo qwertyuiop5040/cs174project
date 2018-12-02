@@ -1,5 +1,6 @@
 public class Account{
-	public static final String CHECKING="Checking";
+	public static final String STUDENT_CHECKING="Student-Checking";
+	public static final String INTEREST_CHECKING="Interest-Checking";
 	public static final String SAVINGS="Savings";
 	public static final String POCKET="Pocket";
 	public Account(int aid,String type, double balance, boolean closed){

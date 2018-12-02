@@ -7,8 +7,16 @@ public class TransactionSender{
 	public static Account getAccount(int aid) throws Exception{
 		ResultSet rs=dbc.sendQuery("SELECT * FROM Account WHERE aid=" + aid);
 		rs.next();
-		return new Account(aid, rs.getString("type"), rs.getDouble("balance"), rs.getBoolean("closed"));
+//		if(rs.next()){
+			return new Account(aid, rs.getString("type"), rs.getDouble("balance"), rs.getBoolean("closed"));
+//		}
+		/*else{
+			rs=dbc.sendQuery("SELECT * FROM PocketAccount WHERE aid=" + aid);
+			rs.next();
+			return new Account(aid, rs.getString("type"), rs.getDouble("balance"), rs.getBoolean("closed"));
+		}*/
 	}
+	
 	public static User getUser(String pin) throws Exception{
 		ResultSet rs=dbc.sendQuery("SELECT * FROM Customer WHERE pin=" + pin);
 		rs.next();
@@ -46,7 +54,7 @@ public class TransactionSender{
 			update_balance("Account", linkedAccount, newLinkedBalance);
 
 			double newBalance = account.balance + amount;
-			update_balance("PocketAccount", account, newBalance);
+			update_balance("Account", account, newBalance);
 		}
 		
 		store_transaction("top_up", account, linkedAccount, amount, date);
@@ -72,7 +80,7 @@ public class TransactionSender{
 			throw new Exception("Your account does not have sufficient funds to complete the transaction.");
 		}else {
 			double newBalance = account.balance - amount;
-			update_balance("PocketAccount", account, newBalance);
+			update_balance("Account", account, newBalance);
 		}
 		
 		store_transaction("purchase", account, amount, date);
@@ -118,7 +126,7 @@ public class TransactionSender{
 			}
 			
 			double newBalance = account.balance - amount;
-			update_balance("PocketAccount", account, newBalance);
+			update_balance("Account", account, newBalance);
 			
 			double newLinkedBalance = linkedAccount.balance + (0.97) * amount;
 			update_balance("Account", linkedAccount, newLinkedBalance);
@@ -136,10 +144,10 @@ public class TransactionSender{
 			throw new Exception("Your source account does not have sufficient funds to complete the transaction.");
 		}else {
 			double newSourceBalance = sourceAccount.balance - amount;
-			update_balance("PocketAccount", sourceAccount, newSourceBalance);
+			update_balance("Account", sourceAccount, newSourceBalance);
 			
 			double newDestBalance = destAccount.balance + amount;
-			update_balance("PocketAccount", destAccount, newDestBalance);
+			update_balance("Account", destAccount, newDestBalance);
 		}
 		
 		store_transaction("pay_friend", sourceAccount, destAccount, amount, date);
@@ -176,8 +184,8 @@ public class TransactionSender{
 		
 		if(account.closed){
 			throw new Exception("Your account is closed");
-		}else if(!account.type.equals(account.CHECKING)){
-			throw new Exception("You may only write checks from checking accounts.");
+		}else if(!account.type.equals(account.STUDENT_CHECKING) && !account.type.equals(account.INTEREST_CHECKING)){
+			throw new Exception("You may only write checks from checking accounts. Your account type is:" + account.type);
 		}else if(account.balance < amount){
 			throw new Exception("Your account does not have sufficient funds to complete the transaction.");
 		}else {
