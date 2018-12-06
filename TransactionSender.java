@@ -207,6 +207,7 @@ public class TransactionSender{
 				case "wire":				return (aid1 == aid)? amount:(-0.98) * amount;
 				case "write_check":			return amount;
 				case "accrue_interest":		return -amount;
+				case "close_account":		return 0;
 				default:return amount;
 			}
 	}
