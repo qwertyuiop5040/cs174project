@@ -34,8 +34,11 @@ public class BankTransactionSender{
 			"-daysSince1970<30) T ON A.aid=T.aid1 OR A.aid=T.aid2 ORDER BY aid, daysSince1970 DESC");
 		return msrs;
 	}
-	public static ResultSet list_closed_accounts() throws Exception{
-		return null;
+	public static ResultSet list_closed_accounts(long date) throws Exception{
+		return dbc.sendQuery("SELECT DISTINCT T.aid1 " + 
+							 "FROM Transaction T " + 
+							 "WHERE T.type = 'close_account' " + 
+							 "AND " + date + " - T.daysSince1970 < 30");
 	}
 	public static ResultSet large_transactions_report() throws Exception{
 
