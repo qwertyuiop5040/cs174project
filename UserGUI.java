@@ -162,12 +162,19 @@ public class UserGUI {
 										  "WHERE O.aid = " + aid);
 			while(rs1.next()){
 				String ownerPin = rs1.getString("pin");
+				// if(DEBUG && ownerPin.equals(pin)){
+					// System.out.println("User PIN:" + pin);
+					// System.out.println("Owner PIN:" + ownerPin);
+				// }
 				if(ownerPin.equals(pin)) return true;
 			}
 		}catch(Exception ex){
-			ex.printStackTrace();
+			outputArea.selectAll();
+			outputArea.replaceSelection("You do not have owner privileges for the account(s) involved in this transaction.");
 			return false;
 		}
+		outputArea.selectAll();
+		outputArea.replaceSelection("You do not have owner privileges for the account(s) involved in this transaction.");
 		return false;
 	}
 	
@@ -330,6 +337,7 @@ public class UserGUI {
 		DepositButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(!updateParameters(2)) return;
+				if(!ownsAccount(aid2)) return;
 				try{
 					TransactionSender.deposit(TransactionSender.getAccount(aid2), amount, date);
 					transactionSuccessful();
@@ -344,6 +352,7 @@ public class UserGUI {
 		TopUpButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(!updateParameters(3)) return;
+				if(!ownsAccount(aid1) || !ownsAccount(aid2)) return;
 				try{
 					TransactionSender.top_up(TransactionSender.getAccount(aid2), TransactionSender.getAccount(aid1), amount, date);
 					transactionSuccessful();
@@ -358,6 +367,7 @@ public class UserGUI {
 		WithdrawButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(!updateParameters(1)) return;
+				if(!ownsAccount(aid1)) return;
 				try{
 					TransactionSender.withdraw(TransactionSender.getAccount(aid1), amount, date);
 					transactionSuccessful();
@@ -372,6 +382,7 @@ public class UserGUI {
 		PurchaseButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(!updateParameters(1)) return;
+				if(!ownsAccount(aid1)) return;
 				try{
 					TransactionSender.purchase(TransactionSender.getAccount(aid1), amount, date);
 					transactionSuccessful();
@@ -386,39 +397,39 @@ public class UserGUI {
 		TransferButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(!updateParameters(3)) return;
-
-				//verify that user owns both accounts
-				boolean verifiedSource = false;				
-				try{
-					ResultSet rs1 = dbc.sendQuery("SELECT O.pin " + 
-											  "FROM Owner O " + 
-											  "WHERE O.aid = " + aid1);
-					while(rs1.next()){
-						String ownerPin = rs1.getString("pin");
-						if(ownerPin.equals(pin)) verifiedSource = true;
-					}
-				}catch(Exception ex){
-					ex.printStackTrace();
-				}
+				if(!ownsAccount(aid1) || !ownsAccount(aid2)) return;
+//				//verify that user owns both accounts
+				// boolean verifiedSource = false;				
+				// try{
+					// ResultSet rs1 = dbc.sendQuery("SELECT O.pin " + 
+											  // "FROM Owner O " + 
+											  // "WHERE O.aid = " + aid1);
+					// while(rs1.next()){
+						// String ownerPin = rs1.getString("pin");
+						// if(ownerPin.equals(pin)) verifiedSource = true;
+					// }
+				// }catch(Exception ex){
+					// ex.printStackTrace();
+				// }
 				
-				boolean verifiedDest = false;
-				try{
-					ResultSet rs2 = dbc.sendQuery("SELECT O.pin " + 
-											  "FROM Owner O " + 
-											  "WHERE O.aid = " + aid2);
-					while(rs2.next()){
-						String ownerPin = rs2.getString("pin");
-						if(ownerPin.equals(pin)) verifiedDest = true;
-					}
-				}catch(Exception ex){
-					ex.printStackTrace();
-				}
+				// boolean verifiedDest = false;
+				// try{
+					// ResultSet rs2 = dbc.sendQuery("SELECT O.pin " + 
+											  // "FROM Owner O " + 
+											  // "WHERE O.aid = " + aid2);
+					// while(rs2.next()){
+						// String ownerPin = rs2.getString("pin");
+						// if(ownerPin.equals(pin)) verifiedDest = true;
+					// }
+				// }catch(Exception ex){
+					// ex.printStackTrace();
+				// }
 				
-				if(!verifiedSource || !verifiedDest){
-					outputArea.selectAll();
-					outputArea.replaceSelection("You do not own both the source and destination accounts. Try again.");
-					return;
-				}
+				// if(!verifiedSource || !verifiedDest){
+					// outputArea.selectAll();
+					// outputArea.replaceSelection("You do not own both the source and destination accounts. Try again.");
+					// return;
+				// }
 				
 				try{
 					TransactionSender.transfer(TransactionSender.getAccount(aid1), TransactionSender.getAccount(aid2), amount, date);
@@ -434,6 +445,7 @@ public class UserGUI {
 		CollectButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(!updateParameters(3)) return;
+				if(!ownsAccount(aid1) || !ownsAccount(aid2)) return;
 				try{
 					TransactionSender.collect(TransactionSender.getAccount(aid1), TransactionSender.getAccount(aid2), amount, date);
 					transactionSuccessful();
@@ -448,26 +460,26 @@ public class UserGUI {
 		WireButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(!updateParameters(3)) return;
-				
-				//verify that user owns source account
-				boolean verified = false;
-				try{
-					ResultSet rs = dbc.sendQuery("SELECT O.pin " + 
-											 "FROM Owner O " + 
-											 "WHERE O.aid = " + aid1);
-					while(rs.next()){
-						String ownerPin = rs.getString("pin");
-						if(ownerPin.equals(pin)) verified = true;
-					}
-				}catch(Exception ex){
-					ex.printStackTrace();
-				}
+				if(!ownsAccount(aid1)) return;
+//				//verify that user owns source account
+				// boolean verified = false;
+				// try{
+					// ResultSet rs = dbc.sendQuery("SELECT O.pin " + 
+											 // "FROM Owner O " + 
+											 // "WHERE O.aid = " + aid1);
+					// while(rs.next()){
+						// String ownerPin = rs.getString("pin");
+						// if(ownerPin.equals(pin)) verified = true;
+					// }
+				// }catch(Exception ex){
+					// ex.printStackTrace();
+				// }
 
-				if(!verified){
-					outputArea.selectAll();
-					outputArea.replaceSelection("You do not own the source account. Try again.");
-					return;
-				}
+				// if(!verified){
+					// outputArea.selectAll();
+					// outputArea.replaceSelection("You do not own the source account. Try again.");
+					// return;
+				// }
 				
 				try{
 					TransactionSender.wire(TransactionSender.getAccount(aid1), TransactionSender.getAccount(aid2), amount, date);
@@ -483,6 +495,7 @@ public class UserGUI {
 		PayFriendButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(!updateParameters(3)) return;
+				if(!ownsAccount(aid1)) return;
 				try{
 					TransactionSender.pay_friend(TransactionSender.getAccount(aid1), TransactionSender.getAccount(aid2), amount, date);
 					transactionSuccessful();
