@@ -314,6 +314,41 @@ public class TransactionSender{
 		dbc.sendQuery(  "INSERT INTO Transaction " +
 						"VALUES (" + "0, " + "'" + type + "'" + "," + aid1 + "," + aid2 + "," + amount + "," + checkID + "," + date + ")" );
 				
+		if(type.equals("top_up") || type.equals("collect") || type.equals("purchase")){
+			ResultSet rs1 = dbc.sendQuery("SELECT * " + 
+										  "FROM Transaction T " + 
+										  "WHERE T.aid1 = " + aid1 + " " + 
+										  "AND " + date + " - T.daysSince1970 < 30");
+			try{
+				rs1.next();
+				rs1.getString("type");
+			} catch(Exception ex){
+				purchase(account1, 5, date);
+			}
+		}else if(type.equals("pay_friend")){
+			ResultSet rs1 = dbc.sendQuery("SELECT * " + 
+										  "FROM Transaction T " + 
+										  "WHERE T.aid1 = " + aid1 + 
+										  "AND " + date + " - T.daysSince1970 < 30");
+			try{
+				rs1.next();
+				rs1.getString("type");
+			} catch(Exception ex){
+				purchase(account1, 5, date);
+			}
+			
+			ResultSet rs2 = dbc.sendQuery("SELECT * " + 
+										  "FROM Transaction T " + 
+										  "WHERE T.aid2 = " + aid2 + 
+										  "AND " + date + " - T.daysSince1970 < 30");
+			try{
+				rs1.next();
+				rs1.getString("type");
+			} catch(Exception ex){
+				if(aid1 != aid2) purchase(account2, 5, date);
+			}
+		}		
+		
 	}
 	
 	private static void store_transaction(String type, Account account1, Account account2, double amount, long date) throws Exception{
