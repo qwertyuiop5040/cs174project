@@ -218,7 +218,7 @@ public class DatabaseInitializer{
 		TransactionSender.write_check(TransactionSender.getAccount(76543), 456, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 12)));
 		TransactionSender.top_up(TransactionSender.getAccount(67521), TransactionSender.getAccount(19023), 50.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 12)));
 		TransactionSender.pay_friend(TransactionSender.getAccount(67521), TransactionSender.getAccount(53027), 20.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 14)));
-		System.out.println("DSFFS");
+		// System.out.println("DSFFS");
 		TransactionSender.collect(TransactionSender.getAccount(43947), TransactionSender.getAccount(29107), 15.0, ChronoUnit.DAYS.between(epoch, LocalDate.of(2011, 3, 14)));
 		System.out.println("DSFFS");
 
@@ -285,15 +285,15 @@ public class DatabaseInitializer{
 			"aid int,"+
 			"pin varchar(4),"+
 			"PRIMARY KEY (aid, pin),"+
-			"FOREIGN KEY (aid) REFERENCES Account,"+
-			"FOREIGN KEY (pin) REFERENCES Customer)");
+			"FOREIGN KEY (aid) REFERENCES Account ON DELETE CASCADE,"+
+			"FOREIGN KEY (pin) REFERENCES Customer ON DELETE CASCADE)");
 		System.out.println("Creating PrimaryOwner");
 		dbc.sendQuery("CREATE TABLE PrimaryOwner("+
 			"aid int,"+
 			"pin varchar(4),"+
 			"PRIMARY KEY (aid),"+
-			"FOREIGN KEY (aid) REFERENCES Account,"+
-			"FOREIGN KEY (pin) REFERENCES Customer)");
+			"FOREIGN KEY (aid) REFERENCES Account ON DELETE CASCADE,"+
+			"FOREIGN KEY (pin) REFERENCES Customer ON DELETE CASCADE)");
 		dbc.sendQuery("CREATE TABLE PocketAccount("+
 			"aid int,"+
 			"linked_aid int,"+
