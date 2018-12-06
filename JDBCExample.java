@@ -74,9 +74,9 @@ public class JDBCExample {
 	
 	public static void testUserGUI(){
 		try{
-    		DatabaseInitializer.wipeDatabase();
-	    	DatabaseInitializer.initializeDatabase();
-	    	DatabaseInitializer.addDefaultData();
+    		// DatabaseInitializer.wipeDatabase();
+	    	// DatabaseInitializer.initializeDatabase();
+	    	// DatabaseInitializer.addDefaultData();
 			new UserGUI();
 	    }catch(Exception e){
 	    	e.printStackTrace();

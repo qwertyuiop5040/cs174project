@@ -53,7 +53,8 @@ public class BankTransactionSender{
 	public static void add_interest(int accountID, long date) throws Exception{
 		TransactionSender.accrue_interest(TransactionSender.getAccount(accountID),date);
 	}
-	public static void create_account(int accountID, int linkedID, String type, double balance, ArrayList<String>owners) throws Exception{
+	public static void create_account(int accountID, int linkedID, String type, double balance, ArrayList<String>owners,ArrayList<String>taxID,
+		ArrayList<String>names, ArrayList<String>addrs) throws Exception{
 		ResultSet rs2=dbc.sendQuery("SELECT aid FROM Account WHERE aid="+accountID);
 		try{
 			rs2.next();
@@ -67,7 +68,9 @@ public class BankTransactionSender{
 			}
 		}
 		boolean first=true;
-		for(String o:owners){
+		String o;
+		for(int i=0;i<owners.size();i++){
+			o=owners.get(i);
 			ResultSet rs=dbc.sendQuery("SELECT pin FROM Owner WHERE pin='"+o+"'");
 			try{
 				rs.next();
@@ -91,7 +94,10 @@ public class BankTransactionSender{
 				// 		}
 				// 	}
 				// }
-				dbc.sendQuery("INSERT INTO Customer VALUES("+r.nextInt(1000000000)+",	'Placeholder Name',	'Placeholder Address',	'"+o+"')");
+				int td=(taxID==null)?r.nextInt(1000000000):Integer.valueOf(taxID.get(i));
+				String nm=(names==null)?"Placeholder Name":names.get(i);
+				String addr=(addrs==null)?"Placeholder Address":addrs.get(i);
+				dbc.sendQuery("INSERT INTO Customer VALUES("+td+",	'"+nm+"',	'"+addr+"',	'"+o+"')");
 			}
 			if(first)dbc.sendQuery("INSERT INTO PrimaryOwner VALUES("+accountID+","+o+")");
 			first=false;
@@ -108,7 +114,7 @@ public class BankTransactionSender{
 		dbc.sendQuery("DELETE FROM Account WHERE closed=1");
 		dbc.sendQuery("DELETE FROM Customer WHERE pin NOT IN (SELECT pin FROM OWNER)");
 	}
-	public static void delete_transactions() throws Exception{
-		dbc.sendQuery("DELETE FROM Transaction");
+	public static void delete_transactions(long date, int dayOfMonth) throws Exception{
+		dbc.sendQuery("DELETE FROM Transaction WHERE "+date+"-daysSince1970>"+dayOfMonth);
 	}
 }

@@ -426,6 +426,12 @@ public static void addButtons(){
 	    	JTextField jt3=new JTextField(20);
 	    	JLabel jl4=new JLabel("Owner PINs (Primary first, separate by comma)");
 	    	JTextField jt4=new JTextField(60);
+	    	JLabel jl6=new JLabel("Optional: Owner TAX ids (Primary first, sep by comma, must have the name number of items as PINs");
+	    	JTextField jt6=new JTextField(60);
+	    	JLabel jl7=new JLabel("Optional: Owner Names (Same as above)");
+	    	JTextField jt7=new JTextField(60);
+	    	JLabel jl8=new JLabel("Optional: Owner Addresses (Same as above)");
+	    	JTextField jt8=new JTextField(60);
 	    	Button button=new Button("Submit");
 	    	button.addActionListener(new ActionListener(){
 	    		public void actionPerformed(ActionEvent e){
@@ -434,8 +440,14 @@ public static void addButtons(){
 	    			try{
 	    				pin=jt.getText();
 	    				ArrayList<String> list = new ArrayList<String>(Arrays.asList(jt4.getText().replaceAll("\\s","").split(",")));
+	    				ArrayList<String> list2=null;
+	    				ArrayList<String> list3=null;
+	    				ArrayList<String> list4=null;
+	    				if(!jt6.getText().equals("")) list2=new ArrayList<String>(Arrays.asList(jt6.getText().replaceAll("\\s","").split(",")));
+	    				if(!jt7.getText().equals("")) list3=new ArrayList<String>(Arrays.asList(jt7.getText().split(",")));
+	    				if(!jt8.getText().equals("")) list4=new ArrayList<String>(Arrays.asList(jt8.getText().split(",")));
 	    				int i5=(jt5.getText().equals(""))?0:Integer.valueOf(jt5.getText());
-	    				BankTransactionSender.create_account(Integer.valueOf(jt.getText()),i5,jt2.getText(),Double.valueOf(jt3.getText()),list);
+	    				BankTransactionSender.create_account(Integer.valueOf(jt.getText()),i5,jt2.getText(),Double.valueOf(jt3.getText()),list,list2,list3,list4);
 	    				good=true;
 	    			}catch(Exception ee){
 	    				ee.printStackTrace();
@@ -458,6 +470,12 @@ public static void addButtons(){
 	    	r2.add(jt3);
 	    	r2.add(jl4);
 	    	r2.add(jt4);
+	    	r2.add(jl6);
+	    	r2.add(jt6);
+	    	r2.add(jl7);
+	    	r2.add(jt7);
+	    	r2.add(jl8);
+	    	r2.add(jt8);
 	    	r2.add(button);
 	    	r.add(r2);
 	    	r.repaint(); 
@@ -491,7 +509,7 @@ public static void addButtons(){
     	public void actionPerformed(ActionEvent e){  
 	    	boolean good=false;
 			try{
-				BankTransactionSender.delete_transactions();
+				BankTransactionSender.delete_transactions(ChronoUnit.DAYS.between(epoch, now),now.getDayOfMonth());
 				good=true;
 			}catch(Exception ee){
 				ee.printStackTrace();
@@ -576,7 +594,7 @@ public static void addButtons(){
 	    	r2.setLayout(rl);
 	    	JLabel jl=new JLabel("Type of Account");
 	    	JTextField jt=new JTextField(20);
-	    	JLabel jl2=new JLabel("New Interest Rate");
+	    	JLabel jl2=new JLabel("New Interest Rate (Putting in 80 means 8000%, 0.80 means 80%");
 	    	JTextField jt2=new JTextField(20);
 	    	Button button=new Button("Submit");
 	    	button.addActionListener(new ActionListener(){
