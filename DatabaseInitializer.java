@@ -267,8 +267,8 @@ public class DatabaseInitializer{
 			"aid1 int,"+
 			"aid2 int,"+
 			"amount float,"+
-			"daysSince1970 int,"+
 			"checkID int,"+
+			"daysSince1970 int,"+
 			"PRIMARY KEY (tid))");
 		dbc.sendQuery("CREATE SEQUENCE tid_inc START WITH 1");
 		System.out.println("Creating trigger");

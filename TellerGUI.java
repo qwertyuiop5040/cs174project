@@ -22,12 +22,13 @@ public static void clearJPanel(){
 public static void func() throws Exception{
 	return;
 }
+
 public static void addButtons(){
 	JButton b=new JButton("Enter Check");  
     b.setBounds(30,115,150,25);  
     b.addActionListener(new ActionListener(){  
     	public void actionPerformed(ActionEvent e){  
-	    	System.out.println("enter check");
+	    	System.out.println("Enter check");
 	    	clearJPanel();
 	    	JPanel r2=new JPanel();
 	    	GridLayout rl = new GridLayout(0,2);
@@ -57,26 +58,11 @@ public static void addButtons(){
 			    	r.repaint();
 	    		}
 	    	});
-	    	// jt.setBounds(50,200,200,200);
-	    	// JTextArea  = new JTextArea();  
-			// PromptSupport.setPrompt("Account id", jt);
-	    	// boolean good=false;
-	    	// try{
-	    	// 	func();
-	    	// 	good=true;
-	    	// }catch(Exception ee){
-	    	// 	ee.printStackTrace();
-	    	// }
-	    	// JLabel status=new JLabel("Transaction Successful");
-	    	// if(!good)
-	    	// 	status.setText("Transaction Failure");
-	    	// r.add(status);
 	    	r2.add(accountLabel);
 	    	r2.add(jt);
 	    	r2.add(al);
 	    	r2.add(jt2);
 	    	r2.add(button);
-	    	// r2.setBounds(50,30,r.getWidth()-100,150);
 	    	r.add(r2);
 	    	r.repaint();
 	    } 
@@ -86,7 +72,38 @@ public static void addButtons(){
     b9.setBounds(30,150,150,25);  
     b9.addActionListener(new ActionListener(){  
     	public void actionPerformed(ActionEvent e){  
-	    	System.out.println("dfs");  
+	    	System.out.println("Monthly Statement");
+	    	clearJPanel();
+	    	JPanel r2=new JPanel();
+	    	GridLayout rl = new GridLayout(0,2);
+	    	r2.setLayout(rl);
+	    	JLabel jl=new JLabel("User PIN Number");
+	    	JTextField jt=new JTextField(20);
+	    	Button button=new Button("Submit");
+	    	button.addActionListener(new ActionListener(){
+	    		public void actionPerformed(ActionEvent e){
+	    			boolean good=false;
+	    			try{
+	    				String pin=jt.getText();
+	    				BankTransactionSender.monthly_statement(pin);
+	    				good=true;
+	    			}catch(Exception ee){
+	    				ee.printStackTrace();
+	    			}
+	    			JLabel status=new JLabel("Transaction Successful");
+			    	if(!good)
+			    		status.setText("Transaction Failure");
+			    	// r.setLayout(new FlowLayout());
+			    	clearJPanel();
+			    	r.add(status);
+			    	r.repaint();
+	    		}
+	    	});
+	    	r2.add(jl);
+	    	r2.add(jt);
+	    	r2.add(button);
+	    	r.add(r2);
+	    	r.repaint();
 	    } 
     });  
 	f.add(b9);

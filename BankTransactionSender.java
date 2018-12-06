@@ -2,15 +2,19 @@ import java.sql.*;
 
 public class BankTransactionSender{	
 	private static DBConnection dbc=DBConnection.getInstance();
-	public static void enter_check(int account, double amount, long date) throws Exception{
-		ResultSet rs=dbc.sendQuery("SELECT * FROM Account WHERE aid="+account);
-		rs.next();
-		System.out.println("hi "+rs.getString("type")+" "+rs.getDouble("balance")+" "+rs.getBoolean("closed"));
-		System.out.println(amount);
-		Account a=new Account(account,rs.getString("type"),rs.getDouble("balance"),rs.getBoolean("closed"));
-		TransactionSender.write_check(a, amount, date);
+	public static void enter_check(int aid, double amount, long date) throws Exception{
+		// ResultSet rs=dbc.sendQuery("SELECT * FROM Account WHERE aid="+account);
+		// rs.next();
+		// System.out.println("hi "+rs.getString("type")+" "+rs.getDouble("balance")+" "+rs.getBoolean("closed"));
+		// System.out.println(amount);
+		// Account a=new Account(account,rs.getString("type"),rs.getDouble("balance"),rs.getBoolean("closed"));
+		TransactionSender.write_check(TransactionSender.getAccount(aid), amount, date);
 	}
-	public static ResultSet monthly_statement(User user) throws Exception{
+	public static ResultSet monthly_statement(String pin) throws Exception{
+		// User user=TransactionSender.getUser(pin);
+		// user.isLoggedIn=true;
+		// dbc.sendQuery("SELECT * FROM (SELECT * FROM Account A WHERE Account.)")
+
 		return null;
 	}
 	public static ResultSet list_closed_accounts() throws Exception{
