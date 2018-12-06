@@ -227,7 +227,7 @@ public class TransactionSender{
 			int aid1 = rs.getInt("aid1");
 			int aid2 = rs.getInt("aid2");
 			Double amount = rs.getDouble("amount");
-			int currentDate = rs.getInt("date");
+			long currentDate = rs.getLong("daysSince1970");
 			
 			long dateDifference = date - currentDate;
 			averageDailyBalance += dateDifference * currentBalance;

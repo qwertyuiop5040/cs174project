@@ -102,7 +102,7 @@ public class BankTransactionSender{
 	}
 	public static void delete_closed_accounts_and_customers() throws Exception{
 		dbc.sendQuery("DELETE FROM Account WHERE closed=1");
-		dbc.sendQuery("DELETE FROM Customer WHERE pin IN (SELECT pin FROM OWNER)");
+		dbc.sendQuery("DELETE FROM Customer WHERE pin NOT IN (SELECT pin FROM OWNER)");
 	}
 	public static void delete_transactions() throws Exception{
 		dbc.sendQuery("DELETE FROM Transaction");
