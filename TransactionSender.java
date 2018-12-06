@@ -212,6 +212,11 @@ public class TransactionSender{
 			}
 	}
 	public static void accrue_interest(Account account, long date) throws Exception{
+		ResultSet rs0 = dbc.sendQuery("SELECT A.closed " + 
+									  "FROM Account A " +
+									  "WHERE A.aid = " + account.aid);
+		rs0.next();
+		if(rs0.getInt("closed") == 1) throw new Exception("Closed accounts may not accrue interest.");
 		
 		ResultSet rs = 					  dbc.sendQuery("SELECT * " + 
 														"FROM Transaction T " + 
