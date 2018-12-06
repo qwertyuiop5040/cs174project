@@ -57,6 +57,7 @@ public class JDBCExample {
     		DatabaseInitializer.wipeDatabase();
 	    	DatabaseInitializer.initializeDatabase();
 	    	DatabaseInitializer.addDefaultData();
+			new UserGUI();
 			tryIllegalQueries();
 	    }catch(Exception e){
 	    	e.printStackTrace();
@@ -71,14 +72,25 @@ public class JDBCExample {
 	    }
     }
 	
+	public static void testUserGUI(){
+		try{
+    		DatabaseInitializer.wipeDatabase();
+	    	DatabaseInitializer.initializeDatabase();
+	    	DatabaseInitializer.addDefaultData();
+			new UserGUI();
+	    }catch(Exception e){
+	    	e.printStackTrace();
+	    }
+	}
+	
 	public static void tryIllegalQueries(){
 		//dbc.sendQuery();
 	}
 
     public static void main(String[]args){
         // test();
-        test1();
-		//new UserGUI();
+        //test1();
+		testUserGUI();
     }
     // public static void main(String[] args) {
     //     Connection conn = null;

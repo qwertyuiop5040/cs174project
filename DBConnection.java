@@ -6,8 +6,8 @@ public class DBConnection {
     static final String DB_URL = "jdbc:oracle:thin:@cloud-34-133.eci.ucsb.edu:1521:XE";
 
     //  Database credentials
-    static final String USERNAME = "hwang00";
-    static final String PASSWORD = "9594458";
+    static final String USERNAME = "ericvaishnav";
+    static final String PASSWORD = "9640301";
     static final boolean DEBUG = true;
 	Connection conn = null;
     Statement stmt = null;
