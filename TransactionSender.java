@@ -25,7 +25,7 @@ public class TransactionSender{
 	public static void deposit(Account account, double amount, long date) throws Exception{
 		if(!account.closed && !account.type.equals(account.POCKET)){
 			double newBalance = account.balance + amount;
-			update_balance("Account", account, newBalance);
+			update_balance("Account", account, newBalance, date);
 		}else{
 			throw new Exception("Your account is either closed or this is a pocket account.");
 		}
@@ -51,10 +51,10 @@ public class TransactionSender{
 			}
 			
 			double newLinkedBalance = linkedAccount.balance - amount;
-			update_balance("Account", linkedAccount, newLinkedBalance);
+			update_balance("Account", linkedAccount, newLinkedBalance, date);
 
 			double newBalance = account.balance + amount;
-			update_balance("Account", account, newBalance);
+			update_balance("Account", account, newBalance, date);
 		}
 		
 		store_transaction("top_up", account, linkedAccount, amount, date);
@@ -67,7 +67,7 @@ public class TransactionSender{
 			throw new Exception("Your account does not have sufficient funds to complete the transaction.");
 		}else {
 			double newBalance = account.balance - amount;
-			update_balance("Account", account, newBalance);
+			update_balance("Account", account, newBalance, date);
 		}
 		
 		store_transaction("withdraw", account, amount, date);
@@ -80,7 +80,7 @@ public class TransactionSender{
 			throw new Exception("Your account does not have sufficient funds to complete the transaction.");
 		}else {
 			double newBalance = account.balance - amount;
-			update_balance("Account", account, newBalance);
+			update_balance("Account", account, newBalance, date);
 		}
 		
 		store_transaction("purchase", account, amount, date);
@@ -99,10 +99,10 @@ public class TransactionSender{
 			throw new Exception("Your source account does not have sufficient funds to complete the transaction.");
 		}else {
 			double newSourceBalance = sourceAccount.balance - amount;
-			update_balance("Account", sourceAccount, newSourceBalance);
+			update_balance("Account", sourceAccount, newSourceBalance, date);
 			
 			double newDestBalance = destAccount.balance + amount;
-			update_balance("Account", destAccount, newDestBalance);
+			update_balance("Account", destAccount, newDestBalance, date);
 		}
 		
 		store_transaction("transfer", sourceAccount, destAccount, amount, date);
@@ -126,10 +126,10 @@ public class TransactionSender{
 			}
 			
 			double newBalance = account.balance - amount;
-			update_balance("Account", account, newBalance);
+			update_balance("Account", account, newBalance, date);
 			
 			double newLinkedBalance = linkedAccount.balance + (0.97) * amount;
-			update_balance("Account", linkedAccount, newLinkedBalance);
+			update_balance("Account", linkedAccount, newLinkedBalance, date);
 		}
 		
 		store_transaction("collect", account, linkedAccount, amount, date);
@@ -144,10 +144,10 @@ public class TransactionSender{
 			throw new Exception("Your source account does not have sufficient funds to complete the transaction.");
 		}else {
 			double newSourceBalance = sourceAccount.balance - amount;
-			update_balance("Account", sourceAccount, newSourceBalance);
+			update_balance("Account", sourceAccount, newSourceBalance, date);
 			
 			double newDestBalance = destAccount.balance + amount;
-			update_balance("Account", destAccount, newDestBalance);
+			update_balance("Account", destAccount, newDestBalance, date);
 		}
 		
 		store_transaction("pay_friend", sourceAccount, destAccount, amount, date);
@@ -164,10 +164,10 @@ public class TransactionSender{
 			throw new Exception("Your source account does not have sufficient funds to complete the transaction.");
 		}else {
 			double newSourceBalance = sourceAccount.balance - amount;
-			update_balance("Account", sourceAccount, newSourceBalance);
+			update_balance("Account", sourceAccount, newSourceBalance, date);
 			
 			double newDestBalance = destAccount.balance + (0.98) * amount;
-			update_balance("Account", destAccount, newDestBalance);
+			update_balance("Account", destAccount, newDestBalance, date);
 		}
 		
 		store_transaction("wire", sourceAccount, destAccount, amount, date);
@@ -190,7 +190,7 @@ public class TransactionSender{
 			throw new Exception("Your account does not have sufficient funds to complete the transaction.");
 		}else {
 			double newBalance = account.balance - amount;
-			update_balance("Account", account, newBalance);
+			update_balance("Account", account, newBalance, date);
 		}
 		
 		store_transaction("write_check", account, null, amount, checkID, date);
@@ -256,7 +256,7 @@ public class TransactionSender{
 			// 								break;
 			// 	case "accrue_interest":		currentBalance -= amount;
 			// }
-			currentBalance+=update_balance(type,amount, aid1,account.aid);
+			currentBalance+=update_balance(type,amount, aid1, account.aid);
 		}
 		
 		averageDailyBalance += (date - earliestDate) * currentBalance;	//for final transaction
@@ -271,22 +271,26 @@ public class TransactionSender{
 		
 		double toBeAdded = (interestRate / 12) * averageDailyBalance;
 		double newBalance = account.balance + toBeAdded;
-		update_balance("Account", account, newBalance);
+		update_balance("Account", account, newBalance, date);
 		
 		store_transaction("accrue_interest", account, toBeAdded, date);
 	}
 	
-	private static void update_balance(String table, Account account, double newBalance) throws Exception{
+	private static void update_balance(String table, Account account, double newBalance, long date) throws Exception{
 		dbc.sendQuery("UPDATE " + table +  
 				" SET balance=" + newBalance +
 				" WHERE aid=" + account.aid);
 		account.balance = newBalance;
-		if(account.balance<=0.01){
-			dbc.sendQuery("UPDATE " + table +  
-				" SET closed=" + 1 +
-				" WHERE aid=" + account.aid);
-		}
+		if(account.balance<=0.01) close_account(table, account, date);
 		account.checkBalance();
+	}
+	
+	private static void close_account(String table, Account account, long date) throws Exception{
+		dbc.sendQuery("UPDATE " + table +  
+					 " SET closed=" + 1 +
+					 " WHERE aid=" + account.aid);
+					 
+		store_transaction("close_account", account, 0, date);
 	}
 	
 	private static void store_transaction(String type, Account account1, Account account2, double amount, int checkID, long date) throws Exception{
