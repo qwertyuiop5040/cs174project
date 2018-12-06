@@ -141,7 +141,7 @@ public static void addButtons(){
 				    				JLabel j2=new JLabel(ot.address);
 				    				j2.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 				    				r4.add(j2);
-				    				ot=(OwnerTuple) it.next();
+				    				if(it.hasNext())ot=(OwnerTuple) it.next();
 				    				boolean notDone2=it.hasNext();
 				    				if(!notDone2){
 				    					notDone=notDone2;
@@ -220,6 +220,7 @@ public static void addButtons(){
 
 				    		}
 				    	}catch(Exception eee){
+				    		eee.printStackTrace();
 				    		r3.add(new JLabel("Result Set Key Failure"));
 				    	}
 			    		r.add(r3);
@@ -241,7 +242,37 @@ public static void addButtons(){
     b2.setBounds(30,185,150,25);  
     b2.addActionListener(new ActionListener(){  
     	public void actionPerformed(ActionEvent e){  
-	    	System.out.println("dfs");  
+	    	boolean good=false;
+			ResultSet rs=null;
+			try{
+				rs=BankTransactionSender.list_closed_accounts(ChronoUnit.DAYS.between(epoch, now));
+				good=true;
+			}catch(Exception ee){
+				ee.printStackTrace();
+			}
+	    	clearJPanel();
+	    	if(!good){
+				JLabel failed=new JLabel("Transaction Failed");
+	    		r.add(failed);
+	    	}else{
+	    		JPanel r3=new JPanel();
+	    		r3.setLayout(new GridLayout(0,1));
+	    		try{
+		    		JLabel jl=new JLabel("Closed Account aids: ");
+		    		r3.add(jl);
+		    		while(rs.next()){
+		    			JLabel jl2=new JLabel(rs.getString("aid1"));
+		    			
+		    			r3.add(jl2);
+		    		}
+		    	}catch(Exception eee){
+		    		eee.printStackTrace();
+		    		r3.add(new JLabel("ResultSet Key Failure"));
+		    	}
+	    		r.add(r3);
+	    	}
+	    	// r.setLayout(new FlowLayout());
+	    	r.repaint(); 
 	    } 
     });  
 	f.add(b2);
@@ -539,7 +570,40 @@ public static void addButtons(){
     b15.setBounds(30,535,150,25);  
     b15.addActionListener(new ActionListener(){  
     	public void actionPerformed(ActionEvent e){  
-	    	System.out.println("dfs");  
+	    	clearJPanel();
+	    	JPanel r2=new JPanel();
+	    	GridLayout rl = new GridLayout(0,2);
+	    	r2.setLayout(rl);
+	    	JLabel jl=new JLabel("Type of Account");
+	    	JTextField jt=new JTextField(20);
+	    	JLabel jl2=new JLabel("New Interest Rate");
+	    	JTextField jt2=new JTextField(20);
+	    	Button button=new Button("Submit");
+	    	button.addActionListener(new ActionListener(){
+	    		public void actionPerformed(ActionEvent e){
+	    			boolean good=false;
+	    			try{
+	    				BankTransactionSender.set_interest_rate(jt.getText(),Double.valueOf(jt2.getText().replaceAll("\\s","")));
+	    				good=true;
+	    			}catch(Exception ee){
+	    				ee.printStackTrace();
+	    			}
+	    			JLabel status=new JLabel("Transaction Successful");
+			    	if(!good)
+			    		status.setText("Transaction Failure");
+			    	// r.setLayout(new FlowLayout());
+			    	clearJPanel();
+			    	r.add(status);
+			    	r.repaint();
+	    		}
+	    	});
+	    	r2.add(jl);
+	    	r2.add(jt);
+	    	r2.add(jl2);
+	    	r2.add(jt2);
+	    	r2.add(button);
+	    	r.add(r2);
+	    	r.repaint();  
 	    } 
     });  
 	f.add(b15);

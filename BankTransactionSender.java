@@ -35,7 +35,7 @@ public class BankTransactionSender{
 		return msrs;
 	}
 	public static ResultSet list_closed_accounts(long date) throws Exception{
-		return dbc.sendQuery("SELECT DISTINCT T.aid1 " + 
+		return dbc.sendQuery("SELECT DISTINCT aid1 " + 
 							 "FROM Transaction T " + 
 							 "WHERE T.type = 'close_account' " + 
 							 "AND " + date + " - T.daysSince1970 < 30");
@@ -99,6 +99,10 @@ public class BankTransactionSender{
 
 
 		}
+	}
+	public static void set_interest_rate(String type, double newInterestRate)throws Exception{
+		dbc.sendQuery("UPDATE Rate " +"SET rate = " + newInterestRate + " " + 
+												 "WHERE type = '"+type+"'");
 	}
 	public static void delete_closed_accounts_and_customers() throws Exception{
 		dbc.sendQuery("DELETE FROM Account WHERE closed=1");
