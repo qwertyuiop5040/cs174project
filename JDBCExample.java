@@ -78,6 +78,7 @@ public class JDBCExample {
     public static void main(String[]args){
         // test();
         test1();
+		//new UserGUI();
     }
     // public static void main(String[] args) {
     //     Connection conn = null;

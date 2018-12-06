@@ -13,7 +13,7 @@ public class UserGUI {
 	//frame, panel, and layout
 	JFrame frame;
 	JPanel panel;
-	GridLayout layout;
+	GridBagLayout layout;
 	
 	//test/debug/demo operation fields/labels/buttons
 	JTextField mmField;
@@ -91,7 +91,7 @@ public class UserGUI {
 			}
 		});
 		
-		layout = new GridLayout(18, 4, 10, 10);
+		layout = new GridBagLayout();
 		panel = new JPanel(layout);
 	
 		//create and add widgets to panel
@@ -128,9 +128,9 @@ public class UserGUI {
 	private void addWidgets() {
 		
 		//test/debug/demo operation fields/labels/buttons
-		mmField = new JTextField(2);
-		ddField = new JTextField(2);
-		yyyyField = new JTextField(4);
+		mmField = new JTextField("MM");
+		ddField = new JTextField("DD");
+		yyyyField = new JTextField("YYYY");
 		dateLabel = new JLabel("New date");
 		dateButton = new JButton("Update Date");
 	
@@ -172,7 +172,7 @@ public class UserGUI {
 			public void actionPerformed(ActionEvent e){
 				String userPin = pinField.getText();
 				try{
-					user = TransactionSender.getUser(pin);
+					user = TransactionSender.getUser(userPin);
 					pin = userPin;
 					loggedIn = true;
 				}catch(Exception ex) {
@@ -424,38 +424,121 @@ public class UserGUI {
 		});
 		
 		//add widgets to panel
-		panel.add(dateLabel, 0, 0);
-		panel.add(mmField, 0, 1);
-		panel.add(ddField, 1, 1);
-		panel.add(yyyyField, 2, 1);
-		panel.add(dateButton, 0, 3);
 		
-		panel.add(rateLabel, 3, 0);
-		panel.add(rateField, 3, 1);
-		panel.add(interestCheckingRateButton, 3, 3);
-		panel.add(studentCheckingRateButton, 4, 3);
-		panel.add(savingsRateButton, 5, 3);
-		panel.add(pocketRateButton, 6, 3);
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.BOTH;
+		// for(int i = 0; i < 17; i++){
+			// c.gridx = 2;
+			// c.gridy = i;
+			// panel.add(new JPanel(), c);
+		// }
+		// c.fill = GridBagConstraints.BOTH;
 		
-		panel.add(pinLabel, 8, 0);
-		panel.add(pinField, 8, 1);
-		panel.add(loginButton, 8, 3);
+		c.gridx = 0;
+		c.gridy = 0;
+		panel.add(pinLabel, c);
+		c.gridx = 1;
+		c.gridy = 0;
+		panel.add(pinField, c);
+		c.gridx = 3;
+		c.gridy = 0;
+		panel.add(loginButton, c);
 		
-		panel.add(aid1Label, 10, 0);
-		panel.add(aid1Field, 10, 1);
-		panel.add(aid2Label, 11, 0);
-		panel.add(aid2Field, 11, 1);
-		panel.add(amountLabel, 12, 0);
-		panel.add(amountField, 12, 1);
+		c.gridx = 0;
+		c.gridy = 1;
+		panel.add(dateLabel, c);
+		c.gridx = 1;
+		c.gridy = 1;
+		panel.add(mmField, c);
+		c.gridx = 1;
+		c.gridy = 2;
+		panel.add(ddField, c);
+		c.gridx = 1;
+		c.gridy = 3;
+		panel.add(yyyyField, c);
+		c.gridx = 3;
+		c.gridy = 1;
+		panel.add(dateButton, c);
 		
-		panel.add(DepositButton, 10, 3);
-		panel.add(TopUpButton, 11, 3);
-		panel.add(WithdrawButton, 12, 3);
-		panel.add(PurchaseButton, 13, 3);
-		panel.add(TransferButton, 14, 3);
-		panel.add(CollectButton, 15, 3);
-		panel.add(WireButton, 16, 3);
-		panel.add(PayFriendButton, 17, 3);
+		c.gridx = 0;
+		c.gridy = 4;
+		panel.add(rateLabel, c);
+		c.gridx = 1;
+		c.gridy = 4;
+		panel.add(rateField, c);
+		c.gridx = 0;
+		c.gridy = 5;
+		panel.add(interestCheckingRateButton, c);
+		c.gridx = 1;
+		c.gridy = 5;
+		panel.add(studentCheckingRateButton, c);
+		c.gridx = 2;
+		c.gridy = 5;
+		panel.add(savingsRateButton, c);
+		c.gridx = 3;
+		c.gridy = 5;
+		panel.add(pocketRateButton, c);
+		
+		c.fill = GridBagConstraints.BOTH;
+		for(int i = 0; i < 4; i++){
+			for(int j = 8; j < 10; j++){
+				c.gridx = i;
+				c.gridy = j;
+				panel.add(new JPanel(), c);				
+			}
+		}
+		c.fill = GridBagConstraints.BOTH;
+		
+		c.gridx = 0;
+		c.gridy = 10;
+		panel.add(aid1Label, c);
+		c.gridx = 1;
+		c.gridy = 10;
+		panel.add(aid1Field, c);
+		c.gridx = 0;
+		c.gridy = 11;
+		panel.add(aid2Label, c);
+		c.gridx = 1;
+		c.gridy = 11;
+		panel.add(aid2Field, c);
+		c.gridx = 0;
+		c.gridy = 12;
+		panel.add(amountLabel, c);
+		c.gridx = 1;
+		c.gridy = 12;
+		panel.add(amountField, c);
+		
+		c.gridx = 3;
+		c.gridy = 10;
+		panel.add(DepositButton, c);		
+		c.gridx = 3;
+		c.gridy = 11;
+		panel.add(TopUpButton, c);		
+		c.gridx = 3;
+		c.gridy = 12;
+		panel.add(WithdrawButton, c);		
+		c.gridx = 3;
+		c.gridy = 13;
+		panel.add(PurchaseButton, c);		
+		c.gridx = 3;
+		c.gridy = 14;
+		panel.add(TransferButton, c);		
+		c.gridx = 3;
+		c.gridy = 15;
+		panel.add(CollectButton, c);		
+		c.gridx = 3;
+		c.gridy = 16;
+		panel.add(WireButton, c);		
+		c.gridx = 3;
+		c.gridy = 17;
+		panel.add(PayFriendButton, c);		
+		
+		c.gridx = 0;
+		c.gridy = 14;
+		c.gridwidth = 2;
+		c.gridheight = 4;
+		panel.add(outputArea, c);
+		
 	}
 }
 
