@@ -195,14 +195,28 @@ public class TransactionSender{
 		
 		store_transaction("write_check", account, null, amount, checkID, date);
 	}
-	
+	public static double update_balance(String type,double amount, int aid1, int aid){
+		switch(type) {
+				case "deposit":				return -amount;
+				case "top_up": 				return(aid1 == aid)? -amount:amount;
+				case "withdraw":			return amount;
+				case "purchase":			return amount;
+				case "transfer":			return(aid1 == aid)? amount:-amount;
+				case "collect":				return (aid1 == aid)? amount:(-0.97) * amount;
+				case "pay_friend":			return(aid1 == aid)? amount:-amount;
+				case "wire":				return (aid1 == aid)? amount:(-0.98) * amount;
+				case "write_check":			return amount;
+				case "accrue_interest":		return -amount;
+				default:return amount;
+			}
+	}
 	public static void accrue_interest(Account account, long date) throws Exception{
 		
 		ResultSet rs = 					  dbc.sendQuery("SELECT * " + 
 														"FROM Transaction T " + 
 														"WHERE (T.aid1 = " + account.aid + " OR T.aid2 = " + account.aid + ")" + 
-														"AND " + date + " - T.date <= 30" + " " + 
-														"ORDER BY T.date DESC");
+														"AND " + date + " - T.daysSince1970 < 30" + " " + 
+														"ORDER BY T.daysSince1970 DESC");
 		double averageDailyBalance = 0;
 		double currentBalance = account.balance;
 		
@@ -219,29 +233,30 @@ public class TransactionSender{
 			averageDailyBalance += dateDifference * currentBalance;
 			date = currentDate;
 			
-			switch(type) {
-				case "deposit":				currentBalance -= amount;
-											break;
-				case "top_up": 				if(aid1 == account.aid) currentBalance -= amount;
-											else					currentBalance += amount;
-											break;
-				case "withdraw":			currentBalance += amount;
-											break;
-				case "purchase":			currentBalance += amount;
-											break;
-				case "collect":				if(aid1 == account.aid) currentBalance += amount;
-											else					currentBalance -= (0.97) * amount;
-											break;
-				case "pay_friend":			if(aid1 == account.aid) currentBalance += amount;
-											else					currentBalance -= amount;
-											break;
-				case "wire":				if(aid1 == account.aid) currentBalance += amount;
-											else					currentBalance -= (0.98) * amount;
-											break;
-				case "write_check":			currentBalance += amount;
-											break;
-				case "accrue_interest":		currentBalance -= amount;
-			}
+			// switch(type) {
+			// 	case "deposit":				currentBalance -= amount;
+			// 								break;
+			// 	case "top_up": 				if(aid1 == account.aid) currentBalance -= amount;
+			// 								else					currentBalance += amount;
+			// 								break;
+			// 	case "withdraw":			currentBalance += amount;
+			// 								break;
+			// 	case "purchase":			currentBalance += amount;
+			// 								break;
+			// 	case "collect":				if(aid1 == account.aid) currentBalance += amount;
+			// 								else					currentBalance -= (0.97) * amount;
+			// 								break;
+			// 	case "pay_friend":			if(aid1 == account.aid) currentBalance += amount;
+			// 								else					currentBalance -= amount;
+			// 								break;
+			// 	case "wire":				if(aid1 == account.aid) currentBalance += amount;
+			// 								else					currentBalance -= (0.98) * amount;
+			// 								break;
+			// 	case "write_check":			currentBalance += amount;
+			// 								break;
+			// 	case "accrue_interest":		currentBalance -= amount;
+			// }
+			currentBalance+=update_balance(type,amount, aid1,account.aid);
 		}
 		
 		averageDailyBalance += (date - earliestDate) * currentBalance;	//for final transaction
@@ -249,7 +264,7 @@ public class TransactionSender{
 		averageDailyBalance /= 30;
 		
 		ResultSet rate = dbc.sendQuery("SELECT R.rate " + 
-									   "FROM Rates R " + 
+									   "FROM Rate R " + 
 									   "WHERE R.type = " + "'" + account.type + "'");
 		rate.next();
 		double interestRate = rate.getDouble("rate");
@@ -266,6 +281,11 @@ public class TransactionSender{
 				" SET balance=" + newBalance +
 				" WHERE aid=" + account.aid);
 		account.balance = newBalance;
+		if(account.balance<=0.01){
+			dbc.sendQuery("UPDATE " + table +  
+				" SET closed=" + 1 +
+				" WHERE aid=" + account.aid);
+		}
 		account.checkBalance();
 	}
 	
