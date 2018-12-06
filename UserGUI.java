@@ -7,6 +7,9 @@ import java.awt.event.*;
 
 
 public class UserGUI {
+	
+	boolean DEBUG = true;
+	
 	//database connection object
 	DBConnection dbc;
 	
@@ -87,6 +90,7 @@ public class UserGUI {
 		//ensure that database connection is terminated when GUI window is closed
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent windowEvent){
+				
 				dbc.close();
 			}
 		});
@@ -105,7 +109,10 @@ public class UserGUI {
 		frame.setVisible(true);
 	}
 	
-	private boolean updateParameters(){
+	private boolean updateParameters(int argumentCode){
+		//argumentCode = 1 --> only need source account
+		//argumentCode = 2 --> only need dest account
+		//argumentCode = 3 --> need both
 		//first verify that user is logged in, else can't perform transaction
 		if(!loggedIn){
 			outputArea.selectAll();
@@ -113,11 +120,55 @@ public class UserGUI {
 			return false;
 		}
 		
-		int newAid1 = Integer.parseInt(aid1Field.getText());
-		int newAid2 = Integer.parseInt(aid2Field.getText());
+		//reset params before getting new values (in case some are blank)
+		aid1 = 0;
+		aid2 = 0;
+		amount = 0;
+		
+		if(!aid1Field.getText().equals("")){
+			int newAid1 = Integer.parseInt(aid1Field.getText());
+			aid1 = newAid1;
+		} else if(argumentCode != 2){	//therefore we need aid1
+			outputArea.selectAll();
+			outputArea.replaceSelection("This transaction requires a source account.");
+			return false;
+		}
+		
+		if(!aid2Field.getText().equals("")){
+			int newAid2 = Integer.parseInt(aid2Field.getText());
+			aid2 = newAid2;
+		} else if(argumentCode != 1){	//therefore we need aid2
+			outputArea.selectAll();
+			outputArea.replaceSelection("This transaction requires a destination account.");
+			return false;
+		}	
+		
+		
+		if(amountField.getText().equals("")){
+			outputArea.selectAll();
+			outputArea.replaceSelection("You must input an amount before performing any transaction.");
+			return false;
+		}
 		double newAmount = Double.parseDouble(amountField.getText());
+		amount = newAmount;
 		
 		return true;
+	}
+	
+	private boolean ownsAccount(int aid){
+		try{
+			ResultSet rs1 = dbc.sendQuery("SELECT O.pin " + 
+										  "FROM Owner O " + 
+										  "WHERE O.aid = " + aid);
+			while(rs1.next()){
+				String ownerPin = rs1.getString("pin");
+				if(ownerPin.equals(pin)) return true;
+			}
+		}catch(Exception ex){
+			ex.printStackTrace();
+			return false;
+		}
+		return false;
 	}
 	
 	private void transactionSuccessful(){
@@ -166,20 +217,33 @@ public class UserGUI {
 		
 		//create output textArea
 		outputArea = new JTextArea(5, 20);
+		outputArea.setLineWrap(true);
+		outputArea.setWrapStyleWord(true);
 		
 		//add actionlisteners to log in button
 		loginButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
+				//first log out in case this log in fails
+				user = null;
+				pin = null;
+				loggedIn = false;
+				
 				String userPin = pinField.getText();
 				try{
 					user = TransactionSender.getUser(userPin);
 					pin = userPin;
 					loggedIn = true;
+					transactionSuccessful();
+					if(DEBUG){
+						System.out.println("User information:");
+						System.out.println("PIN: " + user.pin);
+						System.out.println("TID: " + user.accountID);
+						System.out.println("NAME: " + user.name);
+					}
 				}catch(Exception ex) {
 					outputArea.selectAll();
 					outputArea.replaceSelection("User PIN verification failed. Try again.");
 				}
-				transactionSuccessful();
 			}
 		});
 		
@@ -194,12 +258,15 @@ public class UserGUI {
 				try{
 					LocalDate newDate = LocalDate.parse(dateInput);
 					LocalDate epoch = LocalDate.ofEpochDay(0);
-					date = ChronoUnit.DAYS.between(epoch, newDate);					
+					date = ChronoUnit.DAYS.between(epoch, newDate);		
+					transactionSuccessful();
+					if(DEBUG){
+						System.out.println("New Date = " + date);
+					}
 				} catch(Exception ex){
 					outputArea.selectAll();
 					outputArea.replaceSelection("Error parsing date. Please enter YYYY, MM, and DD as integers.");
 				}
-
 			}
 		});
 		
@@ -208,8 +275,9 @@ public class UserGUI {
 				double newRate = Double.parseDouble(rateField.getText());
 				try{
 					ResultSet rs = dbc.sendQuery("UPDATE Rate " + 
-											 "SET rate = " + newRate + " " + 
-											 "WHERE type = 'Interest-Checking'");
+												 "SET rate = " + newRate + " " + 
+												 "WHERE type = 'Interest-Checking'");
+					transactionSuccessful();
 				}catch(Exception ex){
 					ex.printStackTrace();
 				}
@@ -220,9 +288,10 @@ public class UserGUI {
 			public void actionPerformed(ActionEvent e){
 				double newRate = Double.parseDouble(rateField.getText());
 				try{
-				ResultSet rs = dbc.sendQuery("UPDATE Rate " + 
-											 "SET rate = " + newRate + " " + 
-											 "WHERE type = 'Student-Checking'");	
+					ResultSet rs = dbc.sendQuery("UPDATE Rate " + 
+												 "SET rate = " + newRate + " " + 
+												 "WHERE type = 'Student-Checking'");	
+					transactionSuccessful();							 
 				}catch(Exception ex){
 					ex.printStackTrace();
 				}
@@ -233,9 +302,10 @@ public class UserGUI {
 			public void actionPerformed(ActionEvent e){
 				double newRate = Double.parseDouble(rateField.getText());
 				try{
-				ResultSet rs = dbc.sendQuery("UPDATE Rate " + 
-											 "SET rate = " + newRate + " " + 
-											 "WHERE type = 'Savings'");	
+					ResultSet rs = dbc.sendQuery("UPDATE Rate " + 
+												 "SET rate = " + newRate + " " + 
+												 "WHERE type = 'Savings'");	
+				transactionSuccessful();	
 				}catch(Exception ex){
 					ex.printStackTrace();
 				}				
@@ -248,73 +318,74 @@ public class UserGUI {
 				try{
 				ResultSet rs = dbc.sendQuery("UPDATE Rate " + 
 											 "SET rate = " + newRate + " " + 
-											 "WHERE type = 'Pocket'");	
+											 "WHERE type = 'Pocket'");
+				transactionSuccessful();
 				}catch(Exception ex){
 					ex.printStackTrace();
-				}						
+				}		
 			}
 		});
 		
 		//add actionlisteners to transaction buttons
 		DepositButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				if(!updateParameters()) return;
+				if(!updateParameters(2)) return;
 				try{
 					TransactionSender.deposit(TransactionSender.getAccount(aid2), amount, date);
+					transactionSuccessful();
 				}catch(Exception ex) {
 					String errorMessage = ex.getMessage();
 					outputArea.selectAll();
 					outputArea.replaceSelection(errorMessage);
 				}
-				transactionSuccessful();
 			}
 		});
 		
 		TopUpButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				if(!updateParameters()) return;
+				if(!updateParameters(3)) return;
 				try{
 					TransactionSender.top_up(TransactionSender.getAccount(aid2), TransactionSender.getAccount(aid1), amount, date);
+					transactionSuccessful();
 				}catch(Exception ex) {
 					String errorMessage = ex.getMessage();
 					outputArea.selectAll();
 					outputArea.replaceSelection(errorMessage);
 				}
-				transactionSuccessful();
 			}
 		});
 		
 		WithdrawButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				if(!updateParameters()) return;
+				if(!updateParameters(1)) return;
 				try{
 					TransactionSender.withdraw(TransactionSender.getAccount(aid1), amount, date);
+					transactionSuccessful();
 				}catch(Exception ex) {
 					String errorMessage = ex.getMessage();
 					outputArea.selectAll();
 					outputArea.replaceSelection(errorMessage);
 				}
-				transactionSuccessful();
 			}
 		});
 		
 		PurchaseButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				if(!updateParameters()) return;
+				if(!updateParameters(1)) return;
 				try{
 					TransactionSender.purchase(TransactionSender.getAccount(aid1), amount, date);
+					transactionSuccessful();
 				}catch(Exception ex) {
 					String errorMessage = ex.getMessage();
 					outputArea.selectAll();
 					outputArea.replaceSelection(errorMessage);
 				}
-				transactionSuccessful();
 			}
 		});
 		
 		TransferButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				if(!updateParameters()) return;
+				if(!updateParameters(3)) return;
 
 				//verify that user owns both accounts
 				boolean verifiedSource = false;				
@@ -351,32 +422,32 @@ public class UserGUI {
 				
 				try{
 					TransactionSender.transfer(TransactionSender.getAccount(aid1), TransactionSender.getAccount(aid2), amount, date);
+					transactionSuccessful();
 				}catch(Exception ex) {
 					String errorMessage = ex.getMessage();
 					outputArea.selectAll();
 					outputArea.replaceSelection(errorMessage);
 				}
-				transactionSuccessful();
 			}
 		});
 		
 		CollectButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				if(!updateParameters()) return;
+				if(!updateParameters(3)) return;
 				try{
 					TransactionSender.collect(TransactionSender.getAccount(aid1), TransactionSender.getAccount(aid2), amount, date);
+					transactionSuccessful();
 				}catch(Exception ex) {
 					String errorMessage = ex.getMessage();
 					outputArea.selectAll();
 					outputArea.replaceSelection(errorMessage);
 				}
-				transactionSuccessful();
 			}
 		});
 		
 		WireButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				if(!updateParameters()) return;
+				if(!updateParameters(3)) return;
 				
 				//verify that user owns source account
 				boolean verified = false;
@@ -400,26 +471,26 @@ public class UserGUI {
 				
 				try{
 					TransactionSender.wire(TransactionSender.getAccount(aid1), TransactionSender.getAccount(aid2), amount, date);
+					transactionSuccessful();
 				}catch(Exception ex) {
 					String errorMessage = ex.getMessage();
 					outputArea.selectAll();
 					outputArea.replaceSelection(errorMessage);
 				}
-				transactionSuccessful();
 			}
 		});
 		
 		PayFriendButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				if(!updateParameters()) return;
+				if(!updateParameters(3)) return;
 				try{
 					TransactionSender.pay_friend(TransactionSender.getAccount(aid1), TransactionSender.getAccount(aid2), amount, date);
+					transactionSuccessful();
 				}catch(Exception ex) {
 					String errorMessage = ex.getMessage();
 					outputArea.selectAll();
 					outputArea.replaceSelection(errorMessage);
 				}
-				transactionSuccessful();
 			}
 		});
 		
@@ -427,12 +498,6 @@ public class UserGUI {
 		
 		GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.BOTH;
-		// for(int i = 0; i < 17; i++){
-			// c.gridx = 2;
-			// c.gridy = i;
-			// panel.add(new JPanel(), c);
-		// }
-		// c.fill = GridBagConstraints.BOTH;
 		
 		c.gridx = 0;
 		c.gridy = 0;
