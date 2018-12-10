@@ -567,5 +567,15 @@ public class UserGUI {
 		panel.add(outputArea, c);
 		
 	}
+	public static void main(String args[]){
+		try{
+    		// DatabaseInitializer.wipeDatabase();
+	    	// DatabaseInitializer.initializeDatabase();
+	    	// DatabaseInitializer.addDefaultData();
+			new UserGUI();
+	    }catch(Exception e){
+	    	e.printStackTrace();
+	    }
+	}
 }
 
